@@ -177,23 +177,27 @@ export function Footer() {
 
         <div className="flex">
           <div className="max-w-7xl mx-auto mt-4">
-            <p className="text-xs text-gray-600 text-[11px]">
-              © 2023 Western Union Holdings, Inc. All Rights Reserved <br />The
-              Western Union Online Service is offered by Western Union
-              International Bank GmbH in conjunction with Western Union
-              International Limited. Western Union International Bank GmbH,
-              trading as Western Union International Bank is licensed by the
-              Financial Markets Authority (Österreichische Finanzmarktaufsicht)
-              in Austria.
+            <p className="text-gray-600 text-[10px]">
+              © 2023 Western Union Holdings, Inc. Tous droits réservés <br />
+              Le service en ligne de Western Union est proposé par Western Union
+              International Bank GmbH et Western Union International Limited.
+              Western Union International Bank GmbH, exerçant sous le nom de
+              Western Union International Bank, est titulaire d’une licence
+              délivrée par l’autorité autrichienne de supervision financière
+              (FMA) sise en Autriche.
             </p>
           </div>
           <div className="flex flex-col items-center">
             <div className="text-sm text-gray-600 text-[10px] mr-4">
-              Follow us on
+              <span className="font-bold">Suivez-nous</span> sur
             </div>
             <div className="flex space-x-3 items-center">
-              <FacebookIcon className="text-[#5091b5] h-6 w-6" fill="#5091b5"/>
-              <YoutubeIcon className="text-white h-8 w-8" fill="#5091b5" strokeWidth={0.5}/>
+              <FacebookIcon className="text-[#5091b5] h-6 w-6" fill="#5091b5" />
+              <YoutubeIcon
+                className="text-white h-8 w-8"
+                fill="#5091b5"
+                strokeWidth={0.5}
+              />
               <InstagramIcon className="text-[#5091b5] h-6 w-6" />
               <TwitterIcon className="text-[#5091b5] text-[10px] h-6 w-6" />
             </div>

@@ -43,7 +43,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useState } from "react";
-import { countries } from "../../../lib/data";
+import {
+  CardProp,
+  countries,
+  payerCardData,
+  recevoireCardData,
+} from "../../../lib/data";
 import Image from "next/image";
 import {
   Avatar,
@@ -51,41 +56,49 @@ import {
   AvatarImage,
 } from "../../../components/ui/avatar";
 
-export function Component() {
-  const [isSelected, setSelected] = useState(false);
+type Recevoire = "especes" | "compte-bancaire";
+type Payer = "carte-credit" | "payer-especes" | "transfert-bancaire";
 
-  function handleSelected() {
-    setSelected(!isSelected);
-  }
+export function Component() {
+  const [valueRecevoire, setValueRecevoire] =
+    useState<Recevoire>("compte-bancaire");
+  const [valuePayer, setValuePayer] = useState<Payer>("carte-credit");
+
+  console.log("Payer val", valuePayer);
+
   return (
     <div className="grid grid-cols-3 gap-4 p-4">
       <div className="col-span-2 p-4 bg-white shadow">
         <h1 className="text-2xl font-normal mb-4 border-b">
-          Send Money Online
+          Envoyer de l'argent en ligne
         </h1>
         <div className="mb-4">
           <h2 className="font-normal mb-2">
-            To whom do you want to send money?
+            À qui souhaitez-vous envoyer de l'argent ?
           </h2>
           <RadioGroup defaultValue="option-one" className="flex gap-8 py-4">
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="option-one" id="option-one" />
-              <Label htmlFor="option-one">Send to an existing receiver</Label>
+              <Label htmlFor="option-one">
+                Envoi vers un bénéficiaire existant
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="option-two" id="option-two" />
-              <Label htmlFor="option-two">Send to someone new</Label>
+              <Label htmlFor="option-two">
+                Envoi vers une nouvelle personne
+              </Label>
             </div>
           </RadioGroup>
           <ComboboxForm />
         </div>
         <div className="mb-4 border-y py-2 pb-8">
           <h2 className="font-normal mb-2 text-lg">
-            How much do you want to send?
+            Combien souhaitez-vous envoyer ?
           </h2>
           <div className="flex gap-4 items-center mb-4">
             <div className="border w-full py-[4px]">
-              <div className="text-[11px] px-3">Send amount</div>
+              <div className="text-[11px] px-3">Montant envoyé</div>
               <div className="flex">
                 <Input
                   defaultValue="267.00"
@@ -95,8 +108,8 @@ export function Component() {
                 <div className="px-2 text-sm">EUR</div>
               </div>
             </div>
-            <ArrowLeftRight className="h-10 w-10" />
-            <div className="border w-full py-[4px]">
+            {/* <ArrowLeftRight className="h-10 w-10" /> */}
+            {/* <div className="border w-full py-[4px]">
               <div className="text-[11px] px-3">Receiver gets</div>
               <div className="flex">
                 <Input
@@ -106,136 +119,154 @@ export function Component() {
                 />
                 <div className="px-2 text-sm">XAF</div>
               </div>
-            </div>
+            </div> */}
           </div>
 
-          <div className="text-center text-sm">
+          {/* <div className="text-center text-sm">
             <div className="font-semibold">
               1.00 EUR = CFA Franc BEAC (XAF) 2
             </div>
             <div className="text-[12px]">
               Exchange rate varies with delivery and payment method.Details
             </div>
-          </div>
+          </div> */}
         </div>
         <div className="mb-4">
-          <h2 className="font-semibold mb-2">
-            How does your receiver want the money?
+          <h2 className="font-normal mb-8">
+            Comment le bénéficiaire souhaite-t-il recevoir l’argent?
           </h2>
-          <div className="flex gap-6">
-            <div
-              className={cn(
-                "p-4 bg-white border-2 border-black rounded py-20 w-[200px] h-[140px] relative",
-                !isSelected && "bg-[#045e86] text-white border-[#045e86]"
-              )}
-              onClick={handleSelected}
-            >
-              {!isSelected && (
-                <div className="absolute bg-green-500 rounded-full p-[2px] top-[-14px] right-[-8px]">
-                  <Check size={30} strokeWidth={3} />
-                </div>
-              )}
-              <div className="flex flex-col items-center justify-center mt-[-40px] ">
-                <Avatar>
-                  <AvatarFallback
-                    className={cn(
-                      "border border-black ",
-                      !isSelected && "bg-[#045e86] border-white"
-                    )}
-                  >
-                    <BanknoteIcon
-                      className={cn(
-                        " ",
-                        !isSelected && "bg-[#045e86] text-white"
-                      )}
-                    />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="text-sm font-semibold">Cash</div>
-              </div>
-            </div>
-            <div className="p-4 bg-gray-100 rounded py-20 w-[200px] h-[140px]">
-              <div className="flex flex-col items-center justify-center mt-[-20px]">
-                <CurrencyIcon className="mb-2" />
-                <div>Cash</div>
-              </div>
-            </div>
+          <div className="flex gap-4">
+            {/* {recevoireCardData.map(data => ( */}
+            <RadioGroup defaultValue="especes" className="flex gap-4">
+              <RadioGroupItem
+                value={valueRecevoire}
+                id="especes"
+                onClick={() => setValueRecevoire("especes")}
+                className="hidden"
+              />
+              <Label htmlFor="especes">
+                <RecevoirCard
+                  {...recevoireCardData[0]}
+                  isSelected={valueRecevoire === "especes"}
+                />
+              </Label>
+              <RadioGroupItem
+                value={valueRecevoire}
+                id="compte-bancaire"
+                onClick={() => setValueRecevoire("compte-bancaire")}
+                className="hidden"
+              />
+              <Label htmlFor="compte-bancaire">
+                <RecevoirCard
+                  {...recevoireCardData[1]}
+                  isSelected={valueRecevoire === "compte-bancaire"}
+                />
+              </Label>
+            </RadioGroup>
+            {/* ))} */}
           </div>
+          <div className="border-b mt-6"></div>
         </div>
         <div className="mb-4">
-          <h2 className="font-semibold mb-2">
-            How would you like to pay?{" "}
-            <span className="text-gray-500">Fee</span>
+          <h2 className="font-normal mb-2">
+            Comment voudriez-vous payer?{" "}
+            <span className="text-[#1f698d]">
+              Frais <sup className="text-[10px]">31</sup>
+            </span>
           </h2>
           <div className="flex space-x-2">
-            <button className="flex-1 p-4 bg-blue-500 text-white rounded text-center relative">
-              <CreditCardIcon className="mb-2" />
-              <span>Credit/Debit card</span>
-              <span className="absolute top-0 right-0 p-2 bg-yellow-400 rounded-full">
-                <StarIcon className="text-white" />
-                <span className="text-xs text-white absolute -right-1 -top-1">
-                  New
-                </span>
-              </span>
-              <span className="text-sm">In minutes</span>
-              <span className="text-sm font-semibold">Fee 1.90 EUR</span>
-            </button>
-            <button className="flex-1 p-4 bg-gray-100 rounded text-center">
-              <MoveIcon className="mb-2" />
-              <span>Instant bank transfer</span>
-              <span className="text-sm">In minutes</span>
-              <span className="text-sm font-semibold">Fee 0.90 EUR</span>
-            </button>
-            <button className="flex-1 p-4 bg-gray-100 rounded text-center">
-              <BanknoteIcon className="mb-2" />
-              <span>Bank transfer</span>
-              <span className="text-sm">6 Business days</span>
-              <span className="text-sm font-semibold">Fee 0.90 EUR</span>
-            </button>
+            <RadioGroup defaultValue="carte-credit" className="flex gap-4">
+              <RadioGroupItem
+                value={valuePayer}
+                id="carte-credit"
+                onClick={() => setValuePayer("carte-credit")}
+                className="hidden"
+              />
+              <Label htmlFor="carte-credit">
+                <PayerCard
+                  {...payerCardData[0]}
+                  isSelected={valuePayer === "carte-credit"}
+                />
+              </Label>
+              <RadioGroupItem
+                value={valuePayer}
+                id="payer-especes"
+                onClick={() => setValuePayer("payer-especes")}
+                className="hidden"
+              />
+              <Label htmlFor="payer-especes">
+                <PayerCard
+                  {...payerCardData[1]}
+                  isSelected={valuePayer === "payer-especes"}
+                />
+              </Label>
+              <RadioGroupItem
+                value={valuePayer}
+                id="transfert-bancaire"
+                onClick={() => setValuePayer("transfert-bancaire")}
+                className="hidden"
+              />
+              <Label htmlFor="transfert-bancaire">
+                <PayerCard
+                  {...payerCardData[2]}
+                  isSelected={valuePayer === "transfert-bancaire"}
+                />
+              </Label>
+            </RadioGroup>
           </div>
         </div>
+
+        <div className="border-y py-4 text-[#3ca7c3] mb-4">
+          <div className="text-sm">
+            Appliquer la promotion/les points de récempense
+          </div>
+        </div>
+        <Button className="w-full bg-[#125f86] hover:bg-[#125f86]">
+          Continuer
+        </Button>
       </div>
       <div className="px-4 py-6 bg-[#f3faff] shadow h-fit">
-        <h2 className="text-xl font-normal mb-4">Summary</h2>
-        <div className="justify-between mb-2">
+        <h2 className="text-xl font-normal mb-4 border-b">Synthèse</h2>
+        {/* <div className="justify-between mb-2">
           <div className="border-b text-sm">
             Exchange Rates<sup>2</sup>
           </div>
           <div className="text-right text-lg py-4 border-b">
             1.00 EUR = 3.2994 TND
           </div>
-        </div>
+        </div> */}
         <div className="flex flex-col">
           <div className="flex justify-between mb-2 ">
-            <span className="text-sm">Transfer amount</span>
+            <span className="text-sm">Montant du transfert</span>
             <span>267.00 EUR</span>
           </div>
           <div className="flex justify-between mb-2">
-            <span className="text-sm">
-              Transfer fee<sup>2,5</sup>
-            </span>
-            <span>+ 1.90 EUR</span>
+            <button className="text-sm text-right">Frais de transfert</button>
+            <span >+ 1.90 EUR</span>
           </div>
           <div className="flex justify-between mb-2">
-            <button className="text-sm">Promotional discount</button>
-            <span className="text-[#255e80] text-sm font-semibold">
-              Apply promo
+            <button className="text-sm text-right">Réduction promotionnelle</button>
+            <span className="text-[#255e80] text-sm font-semibold text-right">
+              Appliquer la promotion
             </span>
           </div>
 
           <div className="flex justify-between mb-2">
-            <span className="text-sm">Transfer total</span>
+            <span className="text-sm">Total du transfert</span>
             <span>270.90 EUR</span>
           </div>
           <div className="mb-2">
-            <div className="text-sm border-b">Total Receiver gets</div>
-            <div className="text-right">880.95 TND</div>
+            <div className="text-sm border-b">Total Le bénéficiaire reçoit</div>
+            <div className="text-right">267.00EUR</div>
           </div>
           <div className="flex justify-between mt-4 border-t">
             <span className="text-sm">
-              Delivery time:<sup>1</sup>
+              Disponibilité:<sup>1, 8</sup>
             </span>
-            <span>In minutes</span>
+            <span className="max-w-[60%]">
+              Généralement le même jour ouvrable bancaireGénéralement le même
+              jour ouvrable bancaire
+            </span>
           </div>
         </div>
       </div>
@@ -375,5 +406,81 @@ export function ComboboxForm() {
         />
       </form>
     </Form>
+  );
+}
+
+function RecevoirCard({ isSelected, icon, title: description }: CardProp) {
+  return (
+    <div
+      className={cn(
+        "p-4 bg-white border-2 border-black rounded py-20 w-[200px] h-[140px] relative",
+        isSelected && "bg-[#045e86] text-white border-[#045e86] shadow-2xl"
+      )}
+    >
+      {isSelected && (
+        <div className="absolute bg-green-500 rounded-full p-[2px] top-[-14px] right-[-8px]">
+          <Check size={30} strokeWidth={3} />
+        </div>
+      )}
+      <div className="flex flex-col items-center justify-center mt-[-40px] ">
+        <Avatar className="mt-[-10px] mb-4">
+          <AvatarFallback
+            className={cn(
+              "border border-black",
+              isSelected && "bg-[#045e86] border-white"
+            )}
+          >
+            <BanknoteIcon
+              className={cn(" ", isSelected && "bg-[#045e86] text-white")}
+            />
+          </AvatarFallback>
+        </Avatar>
+        <div className="text-lg font-semibold">{description}</div>
+      </div>
+    </div>
+  );
+}
+function PayerCard({ isSelected, icon, title, description }: CardProp) {
+  return (
+    <>
+      <div
+        className={cn(
+          " bg-white border-2 border-black rounded pt-20 w-[190px] h-[220px] relative flex flex-col justify-between",
+          isSelected && "bg-[#045e86] text-white border-[#045e86] shadow-2xl"
+        )}
+      >
+        {isSelected && (
+          <div className="absolute bg-green-500 rounded-full p-[2px] top-[-14px] right-[-8px]">
+            <Check size={30} strokeWidth={3} />
+          </div>
+        )}
+        <div className="flex flex-col items-center justify-center mt-[-40px]">
+          <Avatar className="mt-[-10px] mb-4">
+            <AvatarFallback
+              className={cn(
+                "border border-black",
+                isSelected && "bg-[#045e86] border-white"
+              )}
+            >
+              <BanknoteIcon
+                className={cn(" ", isSelected && "bg-[#045e86] text-white")}
+              />
+            </AvatarFallback>
+          </Avatar>
+          <div className="text-lg font-semibold text-center leading-5">
+            {title}
+          </div>
+        </div>
+
+        <div
+          className={cn(
+            "border-t-2 py-2",
+            isSelected ? "border-white" : "border-black"
+          )}
+        >
+          <div>{description}</div>
+        </div>
+      </div>
+    </>
   );
 }
