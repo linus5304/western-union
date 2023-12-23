@@ -1,25 +1,15 @@
 "use client";
 import { Input } from "@/components/ui/input";
 import {
-  ArrowLeftRight,
   BanknoteIcon,
-  CheckIcon,
-  CreditCardIcon,
-  CurrencyIcon,
-  MoveIcon,
-  Search,
-  SearchIcon,
-  StarIcon,
+  Search
 } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "../../../components/ui/radio-group";
 import { Label } from "../../../components/ui/label";
-
+import { RadioGroup, RadioGroupItem } from "../../../components/ui/radio-group";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -31,30 +21,29 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from "@/components/ui/form";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { useState } from "react";
+import {
+  Avatar,
+  AvatarFallback
+} from "../../../components/ui/avatar";
 import {
   CardProp,
   countries,
   payerCardData,
   recevoireCardData,
 } from "../../../lib/data";
-import Image from "next/image";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "../../../components/ui/avatar";
 
 type Recevoire = "especes" | "compte-bancaire";
 type Payer = "carte-credit" | "payer-especes" | "transfert-bancaire";
