@@ -1383,3 +1383,44 @@ export const payerCardData: CardProp[] = [
     ),
   },
 ];
+
+export const motifOptions: { label: string; value: string }[] = [
+  {
+    label: "Assistance familiale/Frais de subsistance",
+    value: "FAMILY SUPPORT/LIVING EXPENSES",
+  },
+  { label: "Épargne/Investissements", value: "SAVINGS/INVESTMENTS" },
+  {
+    label: "Paiement de biens et de services",
+    value: "GOODS AND SERVICES PAYMENT/COMMERCIAL TRANSACTION",
+  },
+  { label: "Frais de voyage", value: "TRAVEL EXPENSES" },
+  { label: "Frais d’éducation/scolaires", value: "EDUCATION/SCHOOL FEE" },
+  { label: "Loyer/Hypothèque", value: "RENT/MORTGAGE" },
+  { label: "Urgence/Assistance médicale", value: "EMERGENCY/MEDICAL AID" },
+  {
+    label: "Organisme de bienfaisance/Paiement d'aide",
+    value: "CHARITY/AID PAYMENT",
+  },
+  {
+    label: "Frais relatifs à une loterie ou un prix/Impôts",
+    value: "PRIZE OR LOTTERY FEES/TAXES",
+  },
+  {
+    label: "Paie des employés/Frais des employés",
+    value: "Employee Payroll/Employee Expense",
+  },
+];
+
+export const fondOption: { label: string; value: string }[] = [
+  { label: "Salaire/Revenus", value: "SALARY/INCOME" },
+  { label: "Économies", value: "SAVINGS" },
+  { label: "Prêt/Emprunt", value: "BORROWED FUNDS/LOAN" },
+  { label: "Cadeau", value: "GIFT" },
+  {
+    label: "Pension/Allocations publiques/Aide sociale",
+    value: "PENSION/GOVERNMENT/WELFARE",
+  },
+  { label: "Héritage", value: "INHERITANCE" },
+  { label: "Dons de bienfaisance", value: "CHARITABLE DONATIONS" },
+];

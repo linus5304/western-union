@@ -1,16 +1,13 @@
 "use client";
 import { Input } from "@/components/ui/input";
-import {
-  BanknoteIcon,
-  Search
-} from "lucide-react";
+import { BanknoteIcon, Search } from "lucide-react";
 import { Label } from "../../../components/ui/label";
 import { RadioGroup, RadioGroupItem } from "../../../components/ui/radio-group";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check } from "lucide-react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -24,7 +21,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
 import {
   Popover,
@@ -34,16 +31,14 @@ import {
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useState } from "react";
-import {
-  Avatar,
-  AvatarFallback
-} from "../../../components/ui/avatar";
+import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
 import {
   CardProp,
   countries,
   payerCardData,
   recevoireCardData,
 } from "../../../lib/data";
+import Link from "next/link";
 
 type Recevoire = "especes" | "compte-bancaire";
 type Payer = "carte-credit" | "payer-especes" | "transfert-bancaire";
@@ -210,55 +205,16 @@ export function Component() {
             Appliquer la promotion/les points de récempense
           </div>
         </div>
-        <Button className="w-full bg-[#125f86] hover:bg-[#125f86]">
+        <Link
+          href="/receiver"
+          className={buttonVariants({
+            className: "w-full bg-[#125f86] hover:bg-[#125f86]",
+          })}
+        >
           Continuer
-        </Button>
+        </Link>
       </div>
-      <div className="px-4 py-6 bg-[#f3faff] shadow h-fit">
-        <h2 className="text-xl font-normal mb-4 border-b">Synthèse</h2>
-        {/* <div className="justify-between mb-2">
-          <div className="border-b text-sm">
-            Exchange Rates<sup>2</sup>
-          </div>
-          <div className="text-right text-lg py-4 border-b">
-            1.00 EUR = 3.2994 TND
-          </div>
-        </div> */}
-        <div className="flex flex-col">
-          <div className="flex justify-between mb-2 ">
-            <span className="text-sm">Montant du transfert</span>
-            <span>267.00 EUR</span>
-          </div>
-          <div className="flex justify-between mb-2">
-            <button className="text-sm text-right">Frais de transfert</button>
-            <span >+ 1.90 EUR</span>
-          </div>
-          <div className="flex justify-between mb-2">
-            <button className="text-sm text-right">Réduction promotionnelle</button>
-            <span className="text-[#255e80] text-sm font-semibold text-right">
-              Appliquer la promotion
-            </span>
-          </div>
-
-          <div className="flex justify-between mb-2">
-            <span className="text-sm">Total du transfert</span>
-            <span>270.90 EUR</span>
-          </div>
-          <div className="mb-2">
-            <div className="text-sm border-b">Total Le bénéficiaire reçoit</div>
-            <div className="text-right">267.00EUR</div>
-          </div>
-          <div className="flex justify-between mt-4 border-t">
-            <span className="text-sm">
-              Disponibilité:<sup>1, 8</sup>
-            </span>
-            <span className="max-w-[60%]">
-              Généralement le même jour ouvrable bancaireGénéralement le même
-              jour ouvrable bancaire
-            </span>
-          </div>
-        </div>
-      </div>
+      <TransferSummary />
     </div>
   );
 }
@@ -471,5 +427,59 @@ function PayerCard({ isSelected, icon, title, description }: CardProp) {
         </div>
       </div>
     </>
+  );
+}
+
+export function TransferSummary() {
+  return (
+    <div className="">
+      <div className="px-4 py-6 bg-[#f3faff] shadow h-fit">
+        <h2 className="text-xl font-normal mb-4 border-b">Synthèse</h2>
+        {/* <div className="justify-between mb-2">
+          <div className="border-b text-sm">
+            Exchange Rates<sup>2</sup>
+          </div>
+          <div className="text-right text-lg py-4 border-b">
+            1.00 EUR = 3.2994 TND
+          </div>
+        </div> */}
+        <div className="flex flex-col">
+          <div className="flex justify-between mb-2 ">
+            <span className="text-sm">Montant du transfert</span>
+            <span>267.00 EUR</span>
+          </div>
+          <div className="flex justify-between mb-2">
+            <button className="text-sm text-right">Frais de transfert</button>
+            <span>+ 1.90 EUR</span>
+          </div>
+          <div className="flex justify-between mb-2">
+            <button className="text-sm text-right">
+              Réduction promotionnelle
+            </button>
+            <span className="text-[#255e80] text-sm font-semibold text-right">
+              Appliquer la promotion
+            </span>
+          </div>
+
+          <div className="flex justify-between mb-2">
+            <span className="text-sm">Total du transfert</span>
+            <span>270.90 EUR</span>
+          </div>
+          <div className="mb-2">
+            <div className="text-sm border-b">Total Le bénéficiaire reçoit</div>
+            <div className="text-right">267.00EUR</div>
+          </div>
+          <div className="flex justify-between mt-4 border-t">
+            <span className="text-sm">
+              Disponibilité:<sup>1, 8</sup>
+            </span>
+            <span className="max-w-[60%]">
+              Généralement le même jour ouvrable bancaireGénéralement le même
+              jour ouvrable bancaire
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
