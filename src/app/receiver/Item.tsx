@@ -5,7 +5,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit2Icon, UserPlus } from "lucide-react";
 import Image from "next/image";
@@ -21,6 +21,7 @@ import {
 import { TransferSummary } from "../send-money/start/item";
 import { SelectField } from "../../components/SelectField";
 import { fondOption, motifOptions } from "../../lib/data";
+import Link from "next/link";
 
 export function Component() {
   return (
@@ -228,9 +229,9 @@ function NouveauBeneficier() {
                   options={fondOption}
                 />
               </div>
-              <Button size="lg" className="p-6 bg-[#045e86] hover:bg-[#045e86]">
+              <Link href="/payment" className="p-6 bg-[#045e86] hover:bg-[#045e86]">
                 Continuer
-              </Button>
+              </Link>
               <Button size="lg" className="p-6 hover:bg-none" variant="ghost">
                 Annuler
               </Button>
@@ -330,9 +331,9 @@ function BeneficierExistant({ isDisabled }: { isDisabled?: boolean }) {
                   options={fondOption}
                 />
               </div>
-              <Button size="lg" className="p-6 bg-[#045e86] hover:bg-[#045e86]">
+              <Link href="/payment" className={buttonVariants({ className: "p-6 bg-[#045e86] hover:bg-[#045e86]"})}>
                 Continuer
-              </Button>
+              </Link>
             </div>
           </div>
         </AccordionContent>
