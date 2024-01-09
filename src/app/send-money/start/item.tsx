@@ -285,7 +285,7 @@ export function ComboboxForm() {
                           src={
                             field.value
                               ? countries.find(
-                                  country => country.code === field.value
+                                  country => country.value === field.value
                                 )?.flag!
                               : ""
                           }
@@ -300,8 +300,8 @@ export function ComboboxForm() {
                           </div>
                           {field.value
                             ? countries.find(
-                                country => country.code === field.value
-                              )?.country
+                                country => country.value === field.value
+                              )?.label
                             : "Select language"}
                         </div>
                       </div>
@@ -316,10 +316,10 @@ export function ComboboxForm() {
                     <CommandGroup>
                       {countries.map(country => (
                         <CommandItem
-                          value={country.code}
-                          key={country.code}
+                          value={country.value}
+                          key={country.value}
                           onSelect={() => {
-                            form.setValue("code", country.code!);
+                            form.setValue("code", country.value!);
                             handleOpenChange();
                           }}
                         >
@@ -332,13 +332,13 @@ export function ComboboxForm() {
                             )}
                           /> */}
                           <Image
-                            src={country.flag}
+                            src={country.flag ?? ''}
                             width={40}
                             height={40}
                             alt="flag"
                             className="mr-2"
                           />
-                          {country.country}
+                          {country.label}
                         </CommandItem>
                       ))}
                     </CommandGroup>
