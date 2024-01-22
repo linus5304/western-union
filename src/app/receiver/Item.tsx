@@ -7,10 +7,10 @@ import {
 } from "@/components/ui/accordion";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Edit2Icon, UserPlus } from "lucide-react";
+import { Divide, Edit2Icon, UserPlus } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Form, useForm } from "react-hook-form";
 import { z } from "zod";
 import { InputField } from "../../components/InputField";
 import {
@@ -22,8 +22,16 @@ import { TransferSummary } from "../send-money/start/item";
 import { SelectField } from "../../components/SelectField";
 import { fondOption, motifOptions } from "../../lib/data";
 import Link from "next/link";
+import { useLocalStorage } from "usehooks-ts";
+import { InfoTransactionType, beneficiareSchema } from "../../lib/types";
 
 export function Component() {
+  const [infoTransactionList, setInfoTransactionList] = useLocalStorage<InfoTransactionType[]>("infoTransactionList", []);
+  const [infoTransaction, setInfoTransaction] = useLocalStorage<InfoTransactionType>("infoTransaction", infoTransactionList[0]!);
+  const [beneficiaireList, setBeneficiaireList] = useLocalStorage<InfoTransactionType[]>("beneficiaireList", []);
+
+  // if(!infoTransaction) return (<>Loading...</>)
+
   return (
     <div className="grid grid-cols-3 gap-4 p-6">
       <div className="flex flex-col space-y-6 col-span-2">
@@ -84,169 +92,147 @@ export function Component() {
           d’identité qu’il présentera pour récupérer ces fonds.
         </div>
       </div>
-      <TransferSummary />
+      <TransferSummary
+        montantTransfer={infoTransaction?.montantTransfer ?? 0}
+      />
     </div>
   );
 }
 
-type NouveauBeneficierType = {
-  prenom: string;
-  deuxiemePrenom?: string;
-  nomFamille: string;
-  email?: string;
-  telephone?: string;
-  motif?: string;
-  originFond?: string;
-};
-
-const formSchema = z.object({
-  prenom: z.string({
-    required_error:
-      "Veuillez vérifier et saisir à nouveau le prénom de votre bénéficiaire",
-  }),
-  deuxiemePrenom: z.string().optional(),
-  nomFamille: z.string({
-    required_error:
-      "Veuillez vérifier et saisir à nouveau le nom de famille de votre bénéficiaire",
-  }),
-  email: z.string().optional(),
-  telephone: z.string().optional(),
-  motif: z.string().optional(),
-  originFond: z.string().optional(),
-});
-
 function NouveauBeneficier() {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      prenom: "",
-      deuxiemePrenom: "",
-      nomFamille: "",
-      email: "",
-      motif: "",
-      originFond: "",
-      telephone: "",
-    },
+  const form = useForm<z.infer<typeof beneficiareSchema>>({
+    resolver: zodResolver(beneficiareSchema),
+    // defaultValues: {
+    //   prenom: "",
+    //   deuxiemePrenom: "",
+    //   nomFamille: "",
+    //   email: "",
+    //   motif: "",
+    //   originFond: "",
+    //   telephone: "",
+    // },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    const recipient: NouveauBeneficierType = {
-      prenom: values.prenom,
-      deuxiemePrenom: values.deuxiemePrenom,
-      nomFamille: values.nomFamille,
-      motif: values.motif,
-      originFond: values.originFond,
-      telephone: values.telephone,
-      email: values.email,
-    };
+  function onSubmit(values: z.infer<typeof beneficiareSchema>) {
+    console.log(values);
 
     router.push("/send/review");
   }
 
   return (
-    <Accordion type="single" collapsible>
-      <AccordionItem value="item-1">
-        <AccordionTrigger className="bg-white border border-[#b4d3e5] px-4 rounded shadow-lg">
-          <div className="flex items-center gap-2">
-            <UserPlus size={36} />
-            <div className="font-light text-[#637cb7]">
-              Ajouter un nouveau bénéficiaire
-            </div>
-          </div>
-          <div></div>
-        </AccordionTrigger>
-        <AccordionContent>
-          <div className="p-4 flex gap-8 w-[96%] mx-auto bg-white">
-            <div className="flex flex-col gap-4 w-full">
-              <div className="flex w-full gap-4">
-                <InputField
-                  control={form.control}
-                  formState={form.formState}
-                  label="Prénom"
-                  name="prenom"
-                  type="text"
-                  className="min-w-[300px]"
-                />
-                <InputField
-                  control={form.control}
-                  formState={form.formState}
-                  label="Deuxiemme prénom"
-                  name="deuxiemePrenom"
-                  type="text"
-                  className="min-w-[340px]"
-                />
+    <Form {...form}>
+      <form >
+        <Accordion type="single" collapsible>
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="bg-white border border-[#b4d3e5] px-4 rounded shadow-lg">
+              <div className="flex items-center gap-2">
+                <UserPlus size={36} />
+                <div className="font-light text-[#637cb7]">
+                  Ajouter un nouveau bénéficiaire
+                </div>
               </div>
-              <div className="flex w-full gap-4">
-                <InputField
-                  control={form.control}
-                  formState={form.formState}
-                  label="Nom de famille"
-                  name="nomFamille"
-                  type="text"
-                  className="min-w-[300px]"
-                />
+              <div></div>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="p-4 flex gap-8 w-[96%] mx-auto bg-white">
+                <div className="flex flex-col gap-4 w-full">
+                  <div className="flex w-full gap-4">
+                    <InputField
+                      control={form.control}
+                      formState={form.formState}
+                      label="Prénom"
+                      name="prenom"
+                      type="text"
+                      className="min-w-[300px]"
+                    />
+                    <InputField
+                      control={form.control}
+                      formState={form.formState}
+                      label="Deuxiemme prénom"
+                      name="deuxiemePrenom"
+                      type="text"
+                      className="min-w-[340px]"
+                    />
+                  </div>
+                  <div className="flex w-full gap-4">
+                    <InputField
+                      control={form.control}
+                      formState={form.formState}
+                      label="Nom de famille"
+                      name="nomFamille"
+                      type="text"
+                      className="min-w-[300px]"
+                    />
+                  </div>
+                  <div className="flex w-full gap-4">
+                    <InputField
+                      control={form.control}
+                      formState={form.formState}
+                      label="Code Pays"
+                      name="codePays"
+                      type="text"
+                      className="max-w-[80px] flex-1"
+                    />
+                    <InputField
+                      control={form.control}
+                      formState={form.formState}
+                      label="Télépphone"
+                      name="telephone"
+                      type="text"
+                      className="min-w-[300px]"
+                    />
+                  </div>
+                  <div className="flex w-full gap-4">
+                    <SelectField
+                      control={form.control}
+                      formState={form.formState}
+                      label="Motif du transfert"
+                      name="motif"
+                      type="text"
+                      className="w-[340px]"
+                      options={motifOptions}
+                    />
+                  </div>
+                  <div className="flex w-full gap-4">
+                    <SelectField
+                      control={form.control}
+                      formState={form.formState}
+                      label="Origine des fonds"
+                      name="originFond"
+                      type="text"
+                      className="w-[340px]"
+                      options={fondOption}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-[#125f86] hover:bg-[#125f86]"
+                    onClick={form.handleSubmit(onSubmit)}
+                  >
+                    Continuer
+                  </Button>
+                  <Button
+                    size="lg"
+                    className="p-6 hover:bg-none"
+                    variant="ghost"
+                  >
+                    Annuler
+                  </Button>
+                </div>
               </div>
-              <div className="flex w-full gap-4">
-                <InputField
-                  control={form.control}
-                  formState={form.formState}
-                  label="Code Pays"
-                  name="nomFamille"
-                  type="text"
-                  className="max-w-[80px] flex-1"
-                />
-                <InputField
-                  control={form.control}
-                  formState={form.formState}
-                  label="Nom de famille"
-                  name="nomFamille"
-                  type="text"
-                  className="min-w-[300px]"
-                />
-              </div>
-              <div className="flex w-full gap-4">
-                <SelectField
-                  control={form.control}
-                  formState={form.formState}
-                  label="Motif du transfert"
-                  name="motif"
-                  type="text"
-                  className="w-[340px]"
-                  options={motifOptions}
-                />
-              </div>
-              <div className="flex w-full gap-4">
-                <SelectField
-                  control={form.control}
-                  formState={form.formState}
-                  label="Origine des fonds"
-                  name="originFond"
-                  type="text"
-                  className="w-[340px]"
-                  options={fondOption}
-                />
-              </div>
-              <Link href="/payment" className="p-6 bg-[#045e86] hover:bg-[#045e86]">
-                Continuer
-              </Link>
-              <Button size="lg" className="p-6 hover:bg-none" variant="ghost">
-                Annuler
-              </Button>
-            </div>
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </form>
+    </Form>
   );
 }
 
 function BeneficierExistant({ isDisabled }: { isDisabled?: boolean }) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof beneficiareSchema>>({
+    resolver: zodResolver(beneficiareSchema),
     defaultValues: {
       prenom: "",
       deuxiemePrenom: "",
@@ -258,18 +244,10 @@ function BeneficierExistant({ isDisabled }: { isDisabled?: boolean }) {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof beneficiareSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    const recipient: NouveauBeneficierType = {
-      prenom: values.prenom,
-      deuxiemePrenom: values.deuxiemePrenom,
-      nomFamille: values.nomFamille,
-      motif: values.motif,
-      originFond: values.originFond,
-      telephone: values.telephone,
-      email: values.email,
-    };
+    console.log("values", values);
 
     router.push("/send/review");
   }
@@ -331,9 +309,12 @@ function BeneficierExistant({ isDisabled }: { isDisabled?: boolean }) {
                   options={fondOption}
                 />
               </div>
-              <Link href="/payment" className={buttonVariants({ className: "p-6 bg-[#045e86] hover:bg-[#045e86]"})}>
+              <Button
+                type="submit"
+                className="w-full bg-[#125f86] hover:bg-[#125f86]"
+              >
                 Continuer
-              </Link>
+              </Button>
             </div>
           </div>
         </AccordionContent>

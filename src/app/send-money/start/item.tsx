@@ -1,12 +1,4 @@
 "use client";
-import { Input } from "@/components/ui/input";
-import { BanknoteIcon, Search } from "lucide-react";
-import { Label } from "../../../components/ui/label";
-import { RadioGroup, RadioGroupItem } from "../../../components/ui/radio-group";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Check } from "lucide-react";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Command,
@@ -29,26 +21,52 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { BanknoteIcon, Check, Search } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
+import { UseFormReturn, useForm } from "react-hook-form";
+import * as z from "zod";
+import { NumberField } from "../../../components/NumberField";
 import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
+import { Label } from "../../../components/ui/label";
+import { RadioGroup, RadioGroupItem } from "../../../components/ui/radio-group";
 import {
   CardProp,
   countries,
   payerCardData,
   recevoireCardData,
 } from "../../../lib/data";
-import Link from "next/link";
+import { InfoTransactionType, transactionSchema } from "../../../lib/types";
+import { useLocalStorage } from "usehooks-ts";
+import { useRouter } from "next/navigation";
 
 type Recevoire = "especes" | "compte-bancaire";
 type Payer = "carte-credit" | "payer-especes" | "transfert-bancaire";
 
 export function Component() {
-  const [valueRecevoire, setValueRecevoire] =
-    useState<Recevoire>("compte-bancaire");
-  const [valuePayer, setValuePayer] = useState<Payer>("carte-credit");
+  const [infoTransaction, setInfoTransaction] = useLocalStorage<InfoTransactionType>("infoTransaction", null!);
+  const [infoTransactionList, setInfoTransactionList] = useLocalStorage<InfoTransactionType[]>("infoTransactionList", []);
+  const router = useRouter();
 
-  console.log("Payer val", valuePayer);
+  function handleValuePayer(value: Payer) {
+    form.setValue("modePaiment", value);
+  }
+  function handleValueRecevoire(value: Recevoire) {
+    form.setValue("modeReception", value);
+  }
+
+  const form = useForm<z.infer<typeof transactionSchema>>({
+    resolver: zodResolver(transactionSchema),
+  });
+
+  function onSubmit(data: z.infer<typeof transactionSchema>) {
+    setInfoTransaction(data);
+    setInfoTransactionList([...infoTransactionList, data])
+    router.push("/payment");
+    console.log("Form data", data);
+  }
 
   return (
     <div className="grid grid-cols-3 gap-4 p-4">
@@ -56,165 +74,218 @@ export function Component() {
         <h1 className="text-2xl font-normal mb-4 border-b">
           Envoyer de l'argent en ligne
         </h1>
-        <div className="mb-4">
-          <h2 className="font-normal mb-2">
-            À qui souhaitez-vous envoyer de l'argent ?
-          </h2>
-          <RadioGroup defaultValue="option-one" className="flex gap-8 py-4">
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="option-one" id="option-one" />
-              <Label htmlFor="option-one">
-                Envoi vers un bénéficiaire existant
-              </Label>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="mb-4">
+              <h2 className="font-normal mb-2">
+                À qui souhaitez-vous envoyer de l'argent ?
+              </h2>
+              <FormField
+                control={form.control}
+                name="customerType"
+                render={({ field }) => (
+                  <FormItem className="space-y-3">
+                    <FormControl>
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex gap-8 py-4"
+                      >
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem
+                              value="existing-cust"
+                              id="existing-cust"
+                            />
+                          </FormControl>
+                          <Label htmlFor="existing-cust">
+                            Envoi vers un bénéficiaire existant
+                          </Label>
+                        </FormItem>
+                        <FormItem className="flex items-center space-x-2">
+                          <FormControl>
+                            <RadioGroupItem value="new-cust" id="new-cust" />
+                          </FormControl>
+                          <Label htmlFor="new-cust">
+                            Envoi vers une nouvelle personne
+                          </Label>
+                        </FormItem>
+                      </RadioGroup>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <ComboboxForm form={form} />
             </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="option-two" id="option-two" />
-              <Label htmlFor="option-two">
-                Envoi vers une nouvelle personne
-              </Label>
-            </div>
-          </RadioGroup>
-          <ComboboxForm />
-        </div>
-        <div className="mb-4 border-y py-2 pb-8">
-          <h2 className="font-normal mb-2 text-lg">
-            Combien souhaitez-vous envoyer ?
-          </h2>
-          <div className="flex gap-4 items-center mb-4">
-            <div className="border w-full py-[4px]">
-              <div className="text-[11px] px-3">Montant envoyé</div>
-              <div className="flex">
-                <Input
-                  defaultValue="267.00"
-                  id="sendAmount"
-                  className="w-full h-6 border-none focus:border-none focus-visible:ring-0 focus-visible:ring-offset-0 mt-[-2px]"
-                />
-                <div className="px-2 text-sm">EUR</div>
+            <div className="mb-4 border-y py-2 pb-8">
+              <h2 className="font-normal mb-2 text-lg">
+                Combien souhaitez-vous envoyer ?
+              </h2>
+              <div className="flex gap-4 items-center mb-4">
+                <div className="border w-full py-[4px]">
+                  <div className="text-[11px] px-3">Montant envoyé</div>
+                  <div className="flex justify-between">
+                    <NumberField
+                      control={form.control}
+                      formState={form.formState}
+                      label=""
+                      name="montantTransfer"
+                      type="number"
+                      id="sendAmount"
+                      className="w-full h-6 border-none focus:border-none focus-visible:ring-0 focus-visible:ring-offset-0 mt-[-2px]"
+                    />
+                    <div className="px-2 text-sm">EUR</div>
+                  </div>
+                </div>
               </div>
             </div>
-            {/* <ArrowLeftRight className="h-10 w-10" /> */}
-            {/* <div className="border w-full py-[4px]">
-              <div className="text-[11px] px-3">Receiver gets</div>
-              <div className="flex">
-                <Input
-                  defaultValue="267.00"
-                  id="sendAmount"
-                  className="w-full h-6 border-none focus:border-none focus-visible:ring-0 focus-visible:ring-offset-0 mt-[-2px]"
+            <div className="mb-4">
+              <h2 className="font-normal mb-8">
+                Comment le bénéficiaire souhaite-t-il recevoir l’argent?
+              </h2>
+              <div className="flex gap-4">
+                {/* {recevoireCardData.map(data => ( */}
+
+                <FormField
+                  control={form.control}
+                  name="modeReception"
+                  render={({ field }) => {
+                    return (
+                      <RadioGroup
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                        className="flex gap-4"
+                      >
+                        <FormItem>
+                          <FormControl>
+                            <RadioGroupItem
+                              value="especes"
+                              id="especes"
+                              onClick={() => handleValueRecevoire("especes")}
+                              className="hidden"
+                            />
+                          </FormControl>
+                          <Label htmlFor="especes">
+                            <RecevoirCard
+                              {...recevoireCardData[0]}
+                              isSelected={field.value === "especes"}
+                            />
+                          </Label>
+                        </FormItem>
+
+                        <FormItem>
+                          <FormControl>
+                            <RadioGroupItem
+                              value="compte-bancaire"
+                              id="compte-bancaire"
+                              onClick={() =>
+                                handleValueRecevoire("compte-bancaire")
+                              }
+                              className="hidden"
+                            />
+                          </FormControl>
+                          <Label htmlFor="compte-bancaire">
+                            <RecevoirCard
+                              {...recevoireCardData[1]}
+                              isSelected={field.value === "compte-bancaire"}
+                            />
+                          </Label>
+                        </FormItem>
+                      </RadioGroup>
+                    );
+                  }}
                 />
-                <div className="px-2 text-sm">XAF</div>
               </div>
-            </div> */}
-          </div>
-
-          {/* <div className="text-center text-sm">
-            <div className="font-semibold">
-              1.00 EUR = CFA Franc BEAC (XAF) 2
+              <div className="border-b mt-6"></div>
             </div>
-            <div className="text-[12px]">
-              Exchange rate varies with delivery and payment method.Details
+            <div className="mb-4">
+              <h2 className="font-normal mb-2">
+                Comment voudriez-vous payer?{" "}
+                <span className="text-[#1f698d]">
+                  Frais <sup className="text-[10px]">31</sup>
+                </span>
+              </h2>
+              <div className="flex space-x-2">
+                <FormField
+                  control={form.control}
+                  name="modePaiment"
+                  render={({ field }) => (
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex gap-4"
+                    >
+                      <FormItem>
+                        <FormControl>
+                          <RadioGroupItem
+                            value="carte-credit"
+                            id="carte-credit"
+                            onClick={() => handleValuePayer("carte-credit")}
+                            className="hidden"
+                          />
+                        </FormControl>
+                        <Label htmlFor="carte-credit">
+                          <PayerCard
+                            {...payerCardData[0]}
+                            isSelected={field.value === "carte-credit"}
+                          />
+                        </Label>
+                      </FormItem>
+                      <FormItem>
+                        <FormControl>
+                          <RadioGroupItem
+                            value="payer-especes"
+                            id="payer-especes"
+                            onClick={() => handleValuePayer("payer-especes")}
+                            className="hidden"
+                          />
+                        </FormControl>
+                        <Label htmlFor="payer-especes">
+                          <PayerCard
+                            {...payerCardData[1]}
+                            isSelected={field.value === "payer-especes"}
+                          />
+                        </Label>
+                      </FormItem>
+                      <FormItem>
+                        <FormControl>
+                          <RadioGroupItem
+                            value="transfert-bancaire"
+                            id="transfert-bancaire"
+                            onClick={() =>
+                              handleValuePayer("transfert-bancaire")
+                            }
+                            className="hidden"
+                          />
+                        </FormControl>
+                        <Label htmlFor="transfert-bancaire">
+                          <PayerCard
+                            {...payerCardData[2]}
+                            isSelected={field.value === "transfert-bancaire"}
+                          />
+                        </Label>
+                      </FormItem>
+                    </RadioGroup>
+                  )}
+                />
+              </div>
             </div>
-          </div> */}
-        </div>
-        <div className="mb-4">
-          <h2 className="font-normal mb-8">
-            Comment le bénéficiaire souhaite-t-il recevoir l’argent?
-          </h2>
-          <div className="flex gap-4">
-            {/* {recevoireCardData.map(data => ( */}
-            <RadioGroup defaultValue="especes" className="flex gap-4">
-              <RadioGroupItem
-                value={valueRecevoire}
-                id="especes"
-                onClick={() => setValueRecevoire("especes")}
-                className="hidden"
-              />
-              <Label htmlFor="especes">
-                <RecevoirCard
-                  {...recevoireCardData[0]}
-                  isSelected={valueRecevoire === "especes"}
-                />
-              </Label>
-              <RadioGroupItem
-                value={valueRecevoire}
-                id="compte-bancaire"
-                onClick={() => setValueRecevoire("compte-bancaire")}
-                className="hidden"
-              />
-              <Label htmlFor="compte-bancaire">
-                <RecevoirCard
-                  {...recevoireCardData[1]}
-                  isSelected={valueRecevoire === "compte-bancaire"}
-                />
-              </Label>
-            </RadioGroup>
-            {/* ))} */}
-          </div>
-          <div className="border-b mt-6"></div>
-        </div>
-        <div className="mb-4">
-          <h2 className="font-normal mb-2">
-            Comment voudriez-vous payer?{" "}
-            <span className="text-[#1f698d]">
-              Frais <sup className="text-[10px]">31</sup>
-            </span>
-          </h2>
-          <div className="flex space-x-2">
-            <RadioGroup defaultValue="carte-credit" className="flex gap-4">
-              <RadioGroupItem
-                value={valuePayer}
-                id="carte-credit"
-                onClick={() => setValuePayer("carte-credit")}
-                className="hidden"
-              />
-              <Label htmlFor="carte-credit">
-                <PayerCard
-                  {...payerCardData[0]}
-                  isSelected={valuePayer === "carte-credit"}
-                />
-              </Label>
-              <RadioGroupItem
-                value={valuePayer}
-                id="payer-especes"
-                onClick={() => setValuePayer("payer-especes")}
-                className="hidden"
-              />
-              <Label htmlFor="payer-especes">
-                <PayerCard
-                  {...payerCardData[1]}
-                  isSelected={valuePayer === "payer-especes"}
-                />
-              </Label>
-              <RadioGroupItem
-                value={valuePayer}
-                id="transfert-bancaire"
-                onClick={() => setValuePayer("transfert-bancaire")}
-                className="hidden"
-              />
-              <Label htmlFor="transfert-bancaire">
-                <PayerCard
-                  {...payerCardData[2]}
-                  isSelected={valuePayer === "transfert-bancaire"}
-                />
-              </Label>
-            </RadioGroup>
-          </div>
-        </div>
-
-        <div className="border-y py-4 text-[#3ca7c3] mb-4">
-          <div className="text-sm">
-            Appliquer la promotion/les points de récempense
-          </div>
-        </div>
-        <Link
-          href="/receiver"
-          className={buttonVariants({
-            className: "w-full bg-[#125f86] hover:bg-[#125f86]",
-          })}
-        >
-          Continuer
-        </Link>
+            <div className="border-y py-4 text-[#3ca7c3] mb-4">
+              <div className="text-sm">
+                Appliquer la promotion/les points de récempense
+              </div>
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-[#125f86] hover:bg-[#125f86]"
+            >
+              Continuer
+            </Button>
+          </form>
+        </Form>
       </div>
-      <TransferSummary />
+      <TransferSummary montantTransfer={form.watch("montantTransfer")} />
     </div>
   );
 }
@@ -237,23 +308,11 @@ const FormSchema = z.object({
   }),
 });
 
-export function ComboboxForm() {
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
-  });
+interface ComboboxFormProps {
+  form: UseFormReturn<z.infer<typeof transactionSchema>, any, undefined>;
+}
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    // toast({
-    //   title: "You submitted the following values:",
-    //   description: (
-    //     <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-    //       <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-    //     </pre>
-    //   ),
-    // });
-    console.log("Form data", data);
-  }
-
+export function ComboboxForm({ form }: ComboboxFormProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   function handleOpenChange() {
@@ -261,69 +320,67 @@ export function ComboboxForm() {
   }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="code"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Language</FormLabel>
-              <Popover open={isOpen} onOpenChange={handleOpenChange}>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-full justify-between py-7",
-                        !field.value && "text-muted-foreground"
-                      )}
-                    >
-                      <div className="flex">
-                        <Image
-                          src={
-                            field.value
-                              ? countries.find(
-                                  country => country.value === field.value
-                                )?.flag!
-                              : ""
-                          }
-                          width={40}
-                          height={40}
-                          alt="flag"
-                          className="mr-2"
-                        />
-                        <div>
-                          <div className="text-left text-[12px] text-black">
-                            Send to
-                          </div>
-                          {field.value
-                            ? countries.find(
-                                country => country.value === field.value
-                              )?.label
-                            : "Select language"}
-                        </div>
+    <FormField
+      control={form.control}
+      name="code"
+      render={({ field }) => (
+        <FormItem className="flex flex-col">
+          <FormLabel>Language</FormLabel>
+          <Popover open={isOpen} onOpenChange={handleOpenChange}>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  className={cn(
+                    "w-full justify-between py-7",
+                    !field.value && "text-muted-foreground"
+                  )}
+                >
+                  <div className="flex">
+                    <Image
+                      src={
+                        field.value
+                          ? countries.find(
+                              country => country.value === field.value
+                            )?.flag!
+                          : ""
+                      }
+                      width={40}
+                      height={40}
+                      alt="flag"
+                      className="mr-2"
+                    />
+                    <div>
+                      <div className="text-left text-[12px] text-black">
+                        Send to
                       </div>
-                      <Search className="ml-2 h-8 w-8 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="flex flex-col w-[615px] mt-[-4px] p-0 h-[500px] overflow-y-auto">
-                  <Command>
-                    <CommandInput placeholder="Search language..." />
-                    <CommandEmpty>No language found.</CommandEmpty>
-                    <CommandGroup>
-                      {countries.map(country => (
-                        <CommandItem
-                          value={country.value}
-                          key={country.value}
-                          onSelect={() => {
-                            form.setValue("code", country.value!);
-                            handleOpenChange();
-                          }}
-                        >
-                          {/* <Check
+                      {field.value
+                        ? countries.find(
+                            country => country.value === field.value
+                          )?.label
+                        : "Select language"}
+                    </div>
+                  </div>
+                  <Search className="ml-2 h-8 w-8 shrink-0 opacity-50" />
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="flex flex-col w-[615px] mt-[-4px] p-0 h-[500px] overflow-y-auto">
+              <Command>
+                <CommandInput placeholder="Search language..." />
+                <CommandEmpty>No language found.</CommandEmpty>
+                <CommandGroup>
+                  {countries.map(country => (
+                    <CommandItem
+                      value={country.value}
+                      key={country.value}
+                      onSelect={() => {
+                        form.setValue("code", country.value!);
+                        handleOpenChange();
+                      }}
+                    >
+                      {/* <Check
                             className={cn(
                               "mr-2 h-4 w-4",
                               country.code === field.value
@@ -331,26 +388,24 @@ export function ComboboxForm() {
                                 : "opacity-0"
                             )}
                           /> */}
-                          <Image
-                            src={country.flag ?? ''}
-                            width={40}
-                            height={40}
-                            alt="flag"
-                            className="mr-2"
-                          />
-                          {country.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </form>
-    </Form>
+                      <Image
+                        src={country.flag ?? ""}
+                        width={40}
+                        height={40}
+                        alt="flag"
+                        className="mr-2"
+                      />
+                      {country.label}
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </Command>
+            </PopoverContent>
+          </Popover>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
   );
 }
 
@@ -430,7 +485,11 @@ function PayerCard({ isSelected, icon, title, description }: CardProp) {
   );
 }
 
-export function TransferSummary() {
+export function TransferSummary({
+  montantTransfer = 0,
+}: {
+  montantTransfer: number;
+}) {
   return (
     <div className="">
       <div className="px-4 py-6 bg-[#f3faff] shadow h-fit">
@@ -446,7 +505,7 @@ export function TransferSummary() {
         <div className="flex flex-col">
           <div className="flex justify-between mb-2 ">
             <span className="text-sm">Montant du transfert</span>
-            <span>267.00 EUR</span>
+            <span>{montantTransfer.toFixed(2)} EUR</span>
           </div>
           <div className="flex justify-between mb-2">
             <button className="text-sm text-right">Frais de transfert</button>
@@ -463,11 +522,11 @@ export function TransferSummary() {
 
           <div className="flex justify-between mb-2">
             <span className="text-sm">Total du transfert</span>
-            <span>270.90 EUR</span>
+            <span>{(montantTransfer + 1.9).toFixed(2)} EUR</span>
           </div>
           <div className="mb-2">
             <div className="text-sm border-b">Total Le bénéficiaire reçoit</div>
-            <div className="text-right">267.00EUR</div>
+            <div className="text-right">{montantTransfer.toFixed(2)} EUR</div>
           </div>
           <div className="flex justify-between mt-4 border-t">
             <span className="text-sm">

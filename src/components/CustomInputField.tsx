@@ -1,6 +1,4 @@
-import { Label } from "@/components/ui/label";
-import { ChevronDown, Search } from "lucide-react";
-import Image from "next/image";
+import { ChevronDown } from "lucide-react";
 import React, { useState } from "react";
 import {
   Control,
@@ -17,10 +15,8 @@ import {
   Command,
   CommandEmpty,
   CommandGroup,
-  CommandInput,
-  CommandItem,
+  CommandItem
 } from "./ui/command";
-import { FormControl } from "./ui/form";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 interface Option {

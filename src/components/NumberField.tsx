@@ -15,7 +15,7 @@ interface Option {
   value: string | number;
 }
 
-type InputFieldProps<
+type NumberFieldProps<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues>
 > = React.InputHTMLAttributes<HTMLInputElement | HTMLSelectElement> &
@@ -31,10 +31,9 @@ type InputFieldProps<
     type: string;
     helperText?: string;
     options?: Option[];
-    handleFormat?: (val: string) => void;
   };
 
-export function InputField<
+export function NumberField<
   TFieldValues extends FieldValues,
   TName extends FieldPath<TFieldValues>
 >({
@@ -48,8 +47,7 @@ export function InputField<
   placeholder,
   className,
   description,
-  handleFormat
-}: React.PropsWithChildren<InputFieldProps<TFieldValues, TName>>) {
+}: React.PropsWithChildren<NumberFieldProps<TFieldValues, TName>>) {
   const { [name]: fieldError } = formState.errors;
   const { touchedFields } = formState;
   const error = fieldError as FieldError;
@@ -71,8 +69,8 @@ export function InputField<
                 className={`${className} focus-visible:ring-0 focus-visible:ring-offset-0 ${
                   error ? `border-red-500 focus-visible:ring-red-500` : ""
                 }`}
-                type={type}
-                onChange={e => field.onChange(handleFormat!(e.target.value))}
+                type="number"
+                onChange={(event) => field.onChange(parseInt(event.target.value, 10))}
               />
               {isError && (
                 <div className="text-red-500 text-sm w-[500px] break-words">

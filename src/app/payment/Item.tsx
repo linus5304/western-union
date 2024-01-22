@@ -10,35 +10,67 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Form, useForm } from "react-hook-form";
 import { z } from "zod";
 import { InputField } from "../../components/InputField";
 import { TransferSummary } from "../send-money/start/item";
 import Link from "next/link";
+import {
+  formatBankAccountNumber,
+  formatCVC,
+  formatExpirationDate,
+} from "../../lib/utils";
+import {
+  InfoTransactionType,
+  PaymentCardType,
+  paymentSchema,
+} from "../../lib/types";
+import { useLocalStorage } from "usehooks-ts";
 
 export function Component() {
+  const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
+    InfoTransactionType[]
+  >("infoTransactionList", []);
+  const [infoTransaction, setInfoTransaction] =
+    useLocalStorage<InfoTransactionType>(
+      "infoTransaction",
+      infoTransactionList[0]!
+    );
+  const [beneficiaireList, setBeneficiaireList] = useLocalStorage<
+    InfoTransactionType[]
+  >("beneficiaireList", []);
+  const [paymentCardList, setPaymentCardList] = useLocalStorage<
+    PaymentCardType[]
+  >("paymentCardList", []);
+
+  function handleUpdateTransaction(value: PaymentCardType) {
+    setInfoTransaction({ ...infoTransaction, paymentCard: value });
+  }
+
   return (
     <div className="grid grid-cols-3 gap-4 p-6">
       <div className="flex flex-col space-y-6 col-span-2">
         <div>
           <h1 className="text-2xl font-normal">Informations de paiement</h1>
         </div>
-        <NouvelleCarte />
+        <NouvelleCarte handleUpdateInfoTransaction={handleUpdateTransaction} />
 
         <div>
           <label className="block text-lg font-normal text-gray-600">
             Sélectionner une carte
           </label>
-          <CarteExistante />
+          {paymentCardList.map(card => (
+            <CarteExistante {...card} />
+          ))}
         </div>
         <div>
           <label className="block text-lg font-semibold text-gray-600">
             Bénéficiaires d'autres pays
           </label>
           <div className="flex flex-col gap-2">
-            <CarteExistante />
-            <CarteExistante />
-            <CarteExistante />
+            {paymentCardList.map(card => (
+              <CarteExistante {...card} />
+            ))}
           </div>
         </div>
         <div className="text-[10px] border-b border-dotted border-gray-500 pb-12">
@@ -61,33 +93,22 @@ export function Component() {
           d’identité qu’il présentera pour récupérer ces fonds.
         </div>
       </div>
-      <TransferSummary />
+      <TransferSummary montantTransfer={infoTransaction.montantTransfer ?? 0} />
     </div>
   );
 }
 
-type NouvelleCarteType = {
-  numeroDeCarte: string;
-  dateExpiration: string;
-  cvv: string;
-};
+interface CarteProps {
+  handleUpdateInfoTransaction: (val: PaymentCardType) => void;
+}
 
-const formSchema = z.object({
-  numeroDeCarte: z.string({
-    required_error:
-      "Désolé, nous ne pouvons pas accepter cette carte pour le paiement. Veuillez essayer une autre carte.",
-  }),
-  dateExpiration: z.string().optional(),
-  cvv: z.string({
-    required_error:
-      "Veuillez vérifier et saisir à nouveau le nom de famille de votre bénéficiaire",
-  }),
-});
-
-function NouvelleCarte() {
+function NouvelleCarte({ handleUpdateInfoTransaction }: CarteProps) {
+  const [paymentCardList, setPaymentCardList] = useLocalStorage<
+    PaymentCardType[]
+  >("paymentCardList", []);
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof paymentSchema>>({
+    resolver: zodResolver(paymentSchema),
     defaultValues: {
       numeroDeCarte: "",
       dateExpiration: "",
@@ -95,16 +116,14 @@ function NouvelleCarte() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof paymentSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    const recipient: NouvelleCarteType = {
-      numeroDeCarte: values.numeroDeCarte,
-      dateExpiration: values.dateExpiration ?? "",
-      cvv: values.cvv,
-    };
+    handleUpdateInfoTransaction(values);
+    setPaymentCardList([...paymentCardList, values]);
+    console.log(values);
 
-    router.push("/send/review");
+    router.push('/receiver');
   }
 
   return (
@@ -120,66 +139,76 @@ function NouvelleCarte() {
           <div></div>
         </AccordionTrigger>
         <AccordionContent>
-          <div className="p-4 flex gap-8 w-[96%] mx-auto bg-white">
-            <div className="flex flex-col gap-4 w-full">
-              <div className="border p-2 w-[50%] border-gray-300 rounded shadow-lg flex flex-col gap-4">
-                <InputField
-                  control={form.control}
-                  formState={form.formState}
-                  label="Numéro de carte"
-                  name="numeroDeCarte"
-                  type="text"
-                />
-                <div className="flex gap-2">
-                  <InputField
-                    control={form.control}
-                    formState={form.formState}
-                    label="MM/YY"
-                    name="dateExpiration"
-                    type="text"
-                  />
-                  <InputField
-                    control={form.control}
-                    formState={form.formState}
-                    label="CVV"
-                    name="cvv"
-                    type="text"
-                  />
+          <Form {...form}>
+            <form>
+              <div className="p-4 flex gap-8 w-[96%] mx-auto bg-white">
+                <div className="flex flex-col gap-4 w-full">
+                  <div className="border p-2 w-[50%] border-gray-300 rounded shadow-lg flex flex-col gap-4">
+                    <InputField
+                      control={form.control}
+                      formState={form.formState}
+                      label="Numéro de carte"
+                      name="numeroDeCarte"
+                      type="text"
+                      handleFormat={formatBankAccountNumber}
+                    />
+                    <div className="flex gap-2">
+                      <InputField
+                        control={form.control}
+                        formState={form.formState}
+                        label="MM/YY"
+                        name="dateExpiration"
+                        type="text"
+                        handleFormat={formatExpirationDate}
+                        className="max-w-40"
+                      />
+                      <InputField
+                        control={form.control}
+                        formState={form.formState}
+                        label="CVV"
+                        name="cvv"
+                        type="text"
+                        handleFormat={formatCVC}
+                      />
+                    </div>
+                  </div>
+                  <Button
+                    className="p-6 bg-[#045e86] hover:bg-[#045e86]"
+                    onClick={form.handleSubmit(onSubmit)}
+                  >
+                    Continuer
+                  </Button>
+                  <Button
+                    size="lg"
+                    className="p-6 hover:bg-none"
+                    variant="ghost"
+                  >
+                    Annuler
+                  </Button>
                 </div>
               </div>
-              <Link href="/verification" className={buttonVariants({ className: "p-6 bg-[#045e86] hover:bg-[#045e86]" })}>
-                Continuer
-              </Link>
-              <Button size="lg" className="p-6 hover:bg-none" variant="ghost">
-                Annuler
-              </Button>
-            </div>
-          </div>
+            </form>
+          </Form>
         </AccordionContent>
       </AccordionItem>
     </Accordion>
   );
 }
 
-function CarteExistante() {
+function CarteExistante({ numeroDeCarte, dateExpiration }: PaymentCardType) {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof paymentSchema>>({
+    resolver: zodResolver(paymentSchema),
     defaultValues: {
       cvv: "",
-      dateExpiration: "",
-      numeroDeCarte: "",
+      dateExpiration,
+      numeroDeCarte
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof paymentSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    const recipient: NouvelleCarteType = {
-      numeroDeCarte: values.numeroDeCarte,
-      dateExpiration: values.dateExpiration ?? "",
-      cvv: values.cvv,
-    };
 
     router.push("/send/review");
   }
@@ -196,23 +225,23 @@ function CarteExistante() {
             />
             <div className="font-normal text-sm text-left mr-52">
               <div className="text-[11px]">Se terminant en</div>
-              <div className="font-semibold">1762</div>
+              <div className="font-semibold">{numeroDeCarte.slice(15, 19)}</div>
             </div>
-            <div className="">10/26</div>
+            <div className="">{dateExpiration}</div>
           </div>
         </AccordionTrigger>
         <AccordionContent>
           <div className="p-4 flex gap-8 w-[96%] mx-auto bg-white">
             <div className="flex flex-col gap-4 w-full">
               <div className="border p-2 w-[50%] border-gray-300 rounded shadow-lg flex flex-col gap-4">
-                  <InputField
-                    control={form.control}
-                    formState={form.formState}
-                    label="CVV"
-                    name="cvv"
-                    type="text"
-                    className="w-full"
-                  />
+                <InputField
+                  control={form.control}
+                  formState={form.formState}
+                  label="CVV"
+                  name="cvv"
+                  type="text"
+                  className="w-full"
+                />
               </div>
               <Button size="lg" className="p-6 bg-[#045e86] hover:bg-[#045e86]">
                 Continuer
