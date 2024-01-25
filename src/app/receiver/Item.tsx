@@ -138,7 +138,7 @@ function NouveauBeneficier() {
 
     form.reset();
 
-    // router.push("/send/review");
+    router.push("/payment");
   }
 
   return (
@@ -286,7 +286,7 @@ function BeneficierExistant({
 
     form.reset();
 
-    router.push("/send-money/app/review");
+    router.push("/payment");
   }
   return (
     <Form {...form}>

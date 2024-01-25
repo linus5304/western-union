@@ -66,7 +66,7 @@ export function Component() {
     const data = {...values, id: uuidv4()}
     setInfoTransaction(data);
     setInfoTransactionList([...infoTransactionList, data]);
-    router.push("/payment");
+    router.push("/receiver");
     console.log("Form data", values);
   }
 
