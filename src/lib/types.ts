@@ -39,6 +39,17 @@ export const beneficiareSchema = z.object({
     originFond: z.string().optional(),
 });
 
+export const identiteSchema = z.object({
+    occupation: z.string({
+      required_error: "Veuillez selectionner une occupation",
+    }),
+    niveauDuPoste: z.string(),
+    relationAvecDestinataire: z.string({
+      required_error:
+        "Veuillez selectionner une relation avec le destinataire du transfert",
+    }),
+  });
+
 export const paymentSchema = z.object({
     numeroDeCarte: bankAccountNumberSchema,
     dateExpiration: expirationDateSchema,
@@ -46,8 +57,11 @@ export const paymentSchema = z.object({
   });
 
 export type InfoTransactionType = z.infer<typeof transactionSchema> & {
+    id: string;
     paymentCard?: PaymentCardType;
     beneficiare?: BeneficiareType;
+    identite?: IdentiteType;
 };
-export type BeneficiareType = z.infer<typeof beneficiareSchema> & {};
-export type PaymentCardType = z.infer<typeof paymentSchema> & {};
+export type BeneficiareType = z.infer<typeof beneficiareSchema> & { id: string };
+export type PaymentCardType = z.infer<typeof paymentSchema> & { id: string };
+export type IdentiteType = z.infer<typeof identiteSchema> & { id: string };

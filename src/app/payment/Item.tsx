@@ -26,6 +26,7 @@ import {
   paymentSchema,
 } from "../../lib/types";
 import { useLocalStorage } from "usehooks-ts";
+import { v4 as uuidv4 } from "uuid";
 
 export function Component() {
   const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
@@ -59,8 +60,8 @@ export function Component() {
           <label className="block text-lg font-normal text-gray-600">
             Sélectionner une carte
           </label>
-          {paymentCardList.map(card => (
-            <CarteExistante {...card} />
+          {paymentCardList.map((card, idx) => (
+            <CarteExistante {...card} key={card.id ?? idx}/>
           ))}
         </div>
         <div>
@@ -68,8 +69,8 @@ export function Component() {
             Bénéficiaires d'autres pays
           </label>
           <div className="flex flex-col gap-2">
-            {paymentCardList.map(card => (
-              <CarteExistante {...card} />
+            {paymentCardList.map((card, idx) => (
+              <CarteExistante {...card} key={card.id ?? idx}/>
             ))}
           </div>
         </div>
@@ -93,7 +94,7 @@ export function Component() {
           d’identité qu’il présentera pour récupérer ces fonds.
         </div>
       </div>
-      <TransferSummary montantTransfer={infoTransaction.montantTransfer ?? 0} />
+      <TransferSummary montantTransfer={infoTransaction?.montantTransfer ?? 0} />
     </div>
   );
 }
@@ -119,11 +120,12 @@ function NouvelleCarte({ handleUpdateInfoTransaction }: CarteProps) {
   function onSubmit(values: z.infer<typeof paymentSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    handleUpdateInfoTransaction(values);
-    setPaymentCardList([...paymentCardList, values]);
+    const data = { ...values, id: uuidv4() };
+    handleUpdateInfoTransaction(data);
+    setPaymentCardList([...paymentCardList, data]);
     console.log(values);
 
-    router.push('/receiver');
+    router.push("/verification");
   }
 
   return (
@@ -195,14 +197,17 @@ function NouvelleCarte({ handleUpdateInfoTransaction }: CarteProps) {
   );
 }
 
-function CarteExistante({ numeroDeCarte, dateExpiration }: PaymentCardType) {
+function CarteExistante({ ...payment }: PaymentCardType) {
   const router = useRouter();
+  const [paymentCardList, setPaymentCardList] = useLocalStorage<
+    PaymentCardType[]
+  >("paymentCardList", []);
   const form = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
       cvv: "",
-      dateExpiration,
-      numeroDeCarte
+      dateExpiration: payment.dateExpiration,
+      numeroDeCarte: payment.numeroDeCarte,
     },
   });
 
@@ -210,49 +215,74 @@ function CarteExistante({ numeroDeCarte, dateExpiration }: PaymentCardType) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
 
-    router.push("/send/review");
+    setPaymentCardList(
+      paymentCardList.map(item => {
+        if (item.id === payment.id) {
+          item.cvv = values.cvv;
+        }
+
+        return item;
+      })
+    );
+
+    router.push("/verification");
   }
   return (
-    <Accordion type="single" collapsible>
-      <AccordionItem value="item-1">
-        <AccordionTrigger className="bg-white border border-[#b4d3e5] px-4 rounded shadow-lg h-16">
-          <div className="flex items-center gap-2">
-            <Image
-              src="/master_card.webp"
-              height={30}
-              width={30}
-              alt="Master card"
-            />
-            <div className="font-normal text-sm text-left mr-52">
-              <div className="text-[11px]">Se terminant en</div>
-              <div className="font-semibold">{numeroDeCarte.slice(15, 19)}</div>
-            </div>
-            <div className="">{dateExpiration}</div>
-          </div>
-        </AccordionTrigger>
-        <AccordionContent>
-          <div className="p-4 flex gap-8 w-[96%] mx-auto bg-white">
-            <div className="flex flex-col gap-4 w-full">
-              <div className="border p-2 w-[50%] border-gray-300 rounded shadow-lg flex flex-col gap-4">
-                <InputField
-                  control={form.control}
-                  formState={form.formState}
-                  label="CVV"
-                  name="cvv"
-                  type="text"
-                  className="w-full"
+    <Form {...form}>
+      <form>
+        <Accordion type="single" collapsible>
+          <AccordionItem value="item-1">
+            <AccordionTrigger className="bg-white border border-[#b4d3e5] px-4 rounded shadow-lg h-16">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/master_card.webp"
+                  height={30}
+                  width={30}
+                  alt="Master card"
                 />
+                <div className="font-normal text-sm text-left mr-52">
+                  <div className="text-[11px]">Se terminant en</div>
+                  <div className="font-semibold">
+                    {payment.numeroDeCarte.slice(15, 19)}
+                  </div>
+                </div>
+                <div className="">{payment.dateExpiration}</div>
               </div>
-              <Button size="lg" className="p-6 bg-[#045e86] hover:bg-[#045e86]">
-                Continuer
-              </Button>
-              <Button size="lg" className="p-6 hover:bg-none" variant="ghost">
-                Annuler
-              </Button>
-            </div>
-          </div>
-        </AccordionContent>
-      </AccordionItem>
-    </Accordion>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="p-4 flex gap-8 w-[96%] mx-auto bg-white">
+                <div className="flex flex-col gap-4 w-full">
+                  <div className="border p-2 w-[50%] border-gray-300 rounded shadow-lg flex flex-col gap-4">
+                    <InputField
+                      control={form.control}
+                      formState={form.formState}
+                      handleFormat={formatCVC}
+                      label="CVV"
+                      name="cvv"
+                      type="text"
+                      className="w-full"
+                    />
+                  </div>
+                  <Button
+                    size="lg"
+                    className="p-6 bg-[#045e86] hover:bg-[#045e86]"
+                    onClick={form.handleSubmit(onSubmit)}
+                  >
+                    Continuer
+                  </Button>
+                  <Button
+                    size="lg"
+                    className="p-6 hover:bg-none"
+                    variant="ghost"
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </form>
+    </Form>
   );
 }

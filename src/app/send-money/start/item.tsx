@@ -1,5 +1,5 @@
 "use client";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandEmpty,
@@ -24,9 +24,11 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BanknoteIcon, Check, Search } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { UseFormReturn, useForm } from "react-hook-form";
+import { useLocalStorage } from "usehooks-ts";
+import { v4 as uuidv4 } from 'uuid';
 import * as z from "zod";
 import { NumberField } from "../../../components/NumberField";
 import { Avatar, AvatarFallback } from "../../../components/ui/avatar";
@@ -39,8 +41,6 @@ import {
   recevoireCardData,
 } from "../../../lib/data";
 import { InfoTransactionType, transactionSchema } from "../../../lib/types";
-import { useLocalStorage } from "usehooks-ts";
-import { useRouter } from "next/navigation";
 
 type Recevoire = "especes" | "compte-bancaire";
 type Payer = "carte-credit" | "payer-especes" | "transfert-bancaire";
@@ -53,6 +53,7 @@ export function Component() {
   function handleValuePayer(value: Payer) {
     form.setValue("modePaiment", value);
   }
+
   function handleValueRecevoire(value: Recevoire) {
     form.setValue("modeReception", value);
   }
@@ -61,11 +62,12 @@ export function Component() {
     resolver: zodResolver(transactionSchema),
   });
 
-  function onSubmit(data: z.infer<typeof transactionSchema>) {
+  function onSubmit(values: z.infer<typeof transactionSchema>) {
+    const data = {...values, id: uuidv4()}
     setInfoTransaction(data);
-    setInfoTransactionList([...infoTransactionList, data])
+    setInfoTransactionList([...infoTransactionList, data]);
     router.push("/payment");
-    console.log("Form data", data);
+    console.log("Form data", values);
   }
 
   return (
@@ -285,7 +287,7 @@ export function Component() {
           </form>
         </Form>
       </div>
-      <TransferSummary montantTransfer={form.watch("montantTransfer")} />
+      <TransferSummary montantTransfer={form.watch("montantTransfer") ?? 0} />
     </div>
   );
 }

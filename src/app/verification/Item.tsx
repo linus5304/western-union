@@ -2,13 +2,19 @@
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Form, useForm } from "react-hook-form";
 import { z } from "zod";
 import { CustomInputField } from "../../components/CustomInputField";
-import { occupationOptions } from "../../lib/data";
+import { niveauDuPosteOptions, occupationOptions, relationDestinataireOptions } from "../../lib/data";
 import { TransferSummary } from "../send-money/start/item";
+import { useLocalStorage } from "usehooks-ts";
+import { InfoTransactionType, identiteSchema } from "../../lib/types";
 
 export function Component() {
+  const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
+    InfoTransactionType[]
+  >("infoTransactionList", []);
+
   return (
     <div>
       <div className="grid grid-cols-3 gap-4 p-6">
@@ -21,11 +27,11 @@ export function Component() {
               </p>
             </div>
             <div className="pb-24">
-              <NouvelleCarte />
+              <Identite />
             </div>
           </div>
         </div>
-        <TransferSummary />
+        <TransferSummary montantTransfer={0} />
       </div>
       <div className="border-b w-[80%] border-gray-400 border-dashed mb-10 flex mx-auto"></div>
       <div className="text-[10px] border-b border-dotted border-gray-500 pb-12 w-[80%] text-left">
@@ -51,27 +57,10 @@ export function Component() {
   );
 }
 
-type NouvelleCarteType = {
-  occupation: string;
-  niveauDuPoste: string;
-  relationAvecDestinataire: string;
-};
-
-const formSchema = z.object({
-  occupation: z.string({
-    required_error: "Veuillez selectionner une occupation",
-  }),
-  niveauDuPoste: z.string(),
-  relationAvecDestinataire: z.string({
-    required_error:
-      "Veuillez selectionner une relation avec le destinataire du transfert",
-  }),
-});
-
-function NouvelleCarte() {
+function Identite() {
   const router = useRouter();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof identiteSchema>>({
+    resolver: zodResolver(identiteSchema),
     defaultValues: {
       occupation: "",
       niveauDuPoste: "",
@@ -79,56 +68,57 @@ function NouvelleCarte() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: z.infer<typeof identiteSchema>) {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
-    const recipient: NouvelleCarteType = {
-      occupation: values.occupation,
-      niveauDuPoste: values.niveauDuPoste ?? "",
-      relationAvecDestinataire: values.relationAvecDestinataire,
-    };
 
-    router.push("/send/review");
+    console.log(values);
+
+    router.push("/send-money/app/review");
   }
 
   return (
     <>
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col w-full gap-4">
-          <CustomInputField
-            control={form.control}
-            setValue={form.setValue}
-            formState={form.formState}
-            label="Occupation"
-            name="occupation"
-            type="text"
-            className="w-[340px]"
-            options={occupationOptions}
-          />
-          <CustomInputField
-            control={form.control}
-            setValue={form.setValue}
-            formState={form.formState}
-            label="Niveau du poste"
-            name="niveauDuPoste"
-            type="text"
-            className="w-[340px]"
-            options={occupationOptions}
-          />
-          <CustomInputField
-            control={form.control}
-            setValue={form.setValue}
-            formState={form.formState}
-            label="Relation avec le destinataire du transfert"
-            name="relationAvecDestinataire"
-            type="text"
-            className="w-[340px]"
-            options={occupationOptions}
-          />
-        </div>
-        <div className="border-b border-dashed"></div>
-        <Button size="lg">Continuer</Button>
-      </div>
+      <Form {...form}>
+        <form>
+          <div className="flex flex-col gap-8">
+            <div className="flex flex-col w-full gap-4">
+              <CustomInputField
+                control={form.control}
+                setValue={form.setValue}
+                formState={form.formState}
+                label="Occupation"
+                name="occupation"
+                type="text"
+                className="w-[340px]"
+                options={occupationOptions}
+              />
+              <CustomInputField
+                control={form.control}
+                setValue={form.setValue}
+                formState={form.formState}
+                label="Niveau du poste"
+                name="niveauDuPoste"
+                type="text"
+                className="w-[340px]"
+                options={niveauDuPosteOptions}
+              />
+              <CustomInputField
+                control={form.control}
+                setValue={form.setValue}
+                formState={form.formState}
+                label="Relation avec le destinataire du transfert"
+                name="relationAvecDestinataire"
+                type="text"
+                className="w-[340px]"
+                options={relationDestinataireOptions}
+              />
+            </div>
+            <div className="border-b border-dashed"></div>
+            <Button size="lg" onClick={form.handleSubmit(onSubmit)}>Continuer</Button>
+          </div>
+        </form>
+      </Form>
     </>
   );
 }

@@ -1425,10 +1425,97 @@ export const fondOption: { label: string; value: string }[] = [
   { label: "Dons de bienfaisance", value: "CHARITABLE DONATIONS" },
 ];
 
+// export const occupationOptions: { label: string; value: string }[] = [
+//   { label: "Employé", value: "EMPLOYED" },
+//   { label: "Chômeur", value: "UNEMPLOYED" },
+//   { label: "Étudiant", value: "STUDENT" },
+//   { label: "Retraité", value: "RETIRED" },
+//   { label: "Autre", value: "OTHER" },
+// ];
+
 export const occupationOptions: { label: string; value: string }[] = [
-  { label: "Employé", value: "EMPLOYED" },
-  { label: "Chômeur", value: "UNEMPLOYED" },
-  { label: "Étudiant", value: "STUDENT" },
-  { label: "Retraité", value: "RETIRED" },
-  { label: "Autre", value: "OTHER" },
+  {
+    label: "Employé(e) d'une compagnie aérienne ou maritime",
+    value: "Employé(e) d'une compagnie aérienne ou maritime",
+  },
+  {
+    label: "Professionnel de l'art, du divertissement et des médias",
+    value: "Professionnel de l'art, du divertissement et des médias",
+  },
+  {
+    label: "Employé(e) civil(e) ou fonctionnaire(trice)",
+    value: "Employé(e) civil(e) ou fonctionnaire(trice)",
+  },
+  {
+    label: "Services de soins esthétiques et personnels",
+    value: "Services de soins esthétiques et personnels",
+  },
+  { label: "Aide-ménagère", value: "Aide-ménagère" },
+  { label: "Chauffeur", value: "Chauffeur" },
+  {
+    label: "Employé(e) d'hôtellerie/restauration/loisirs",
+    value: "Employé(e) d'hôtellerie/restauration/loisirs",
+  },
+  {
+    label: "Femme au foyer/Garde d'enfants",
+    value: "Femme au foyer/Garde d'enfants",
+  },
+  {
+    label: "Professionnel de l'informatique et de la technologie",
+    value: "Professionnel de l'informatique et de la technologie",
+  },
+  { label: "Ouvrier-Agriculture", value: "Ouvrier-Agriculture" },
+  { label: "Manoeuvre-Construction", value: "Manoeuvre-Construction" },
+  { label: "Manoeuvre manufacturière", value: "Manoeuvre manufacturière" },
+  {
+    label: "Main-d'œuvre - Pétrole/Gaz/Mines/Foresterie",
+    value: "Main-d'œuvre - Pétrole/Gaz/Mines/Foresterie",
+  },
+  {
+    label: "Professionnels de l'application de la loi et militaires",
+    value: "Professionnels de l'application de la loi et militaires",
+  },
+  {
+    label: "Professionnel de la santé et de la médecine",
+    value: "Professionnel de la santé et de la médecine",
+  },
+  {
+    label: "Bénévole à but non lucratif",
+    value: "Bénévole à but non lucratif",
+  },
+  { label: "Professionnel de bureau", value: "Professionnel de bureau" },
+  {
+    label: "Religieux/Serviteur d'église",
+    value: "Religieux/Serviteur d'église",
+  },
+  { label: "Ventes au détail", value: "Ventes au détail" },
+];
+
+export const niveauDuPosteOptions: { label: string; value: string }[] = [
+  { label: "Niveau d'entrée", value: "Niveau d'entrée" },
+  {
+    label: "Niveau intermédiaire/Superviseur/Gestion",
+    value: "Niveau intermédiaire/Superviseur/Gestion",
+  },
+  { label: "Propriétaire", value: "Propriétaire" },
+  {
+    label: "Niveau supérieur/cadre supérieur",
+    value: "Niveau supérieur/cadre supérieur",
+  },
+];
+
+export const relationDestinataireOptions: { label: string; value: string }[] = [
+  {
+    label: "Donateur/Receveur de fonds de bienfaisance",
+    value: "Donateur/Receveur de fonds de bienfaisance",
+  },
+  { label: "Employé/Employeur", value: "Employé/Employeur" },
+  { label: "Famille", value: "Famille" },
+  { label: "Ami", value: "Ami" },
+  { label: "Pas de lien de parenté", value: "Pas de lien de parenté" },
+  { label: "Acheteur/Vendeur", value: "Acheteur/Vendeur" },
+  {
+    label: "Partenaire commercial/commercial",
+    value: "Partenaire commercial/commercial",
+  },
 ];

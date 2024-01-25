@@ -36,7 +36,7 @@ export default function RootLayout({
   );
 }
 
-export function Footer() {
+function Footer() {
   return (
     <footer className="bg-[#f2f2f2] p-4">
       <div className="max-w-4xl mx-auto flex flex-col items-center justify-between">

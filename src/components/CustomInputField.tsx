@@ -6,6 +6,7 @@ import {
   FieldError,
   FieldPath,
   FieldValues,
+  PathValue,
   UseFormReturn,
   UseFormSetValue,
 } from "react-hook-form";
@@ -97,7 +98,7 @@ export function CustomInputField<
                       <div className="text-left font-normal">
                         {field.value
                           ? options?.find(
-                              country => country.value === field.value
+                              option => option.value === field.value
                             )?.label
                           : " "}
                       </div>
@@ -109,14 +110,14 @@ export function CustomInputField<
               <PopoverContent className="flex w-[690px] flex-col mt-[-4px] p-0 h-fit overflow-y-auto">
                 <Command>
                   {/* <CommandInput placeholder="Search language..." /> */}
-                  <CommandEmpty>No language found.</CommandEmpty>
+                  <CommandEmpty>No option found</CommandEmpty>
                   <CommandGroup>
                     {options?.map(option => (
                       <CommandItem
                         value={option.value as string}
                         key={option.value}
                         onSelect={() => {
-                          // setValue(name, option.value!);
+                          setValue(name, `${option.value!}` as PathValue<TFieldValues, typeof name>);
                           handleOpenChange();
                         }}
                       >
