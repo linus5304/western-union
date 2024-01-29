@@ -31,3 +31,11 @@ export const formatExpirationDate = (value: string): string => {
 export const formatCVC = (value: string): string => {
   return value.replace(/\D/g, '').slice(0, 3); // Keep only the first 4 digits
 };
+
+export function formatDate(date: Date): string {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // +1 because months are zero-indexed
+  const year = date.getFullYear();
+
+  return `${day}.${month}.${year}`;
+}

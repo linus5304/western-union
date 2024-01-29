@@ -1,19 +1,33 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Form, useForm } from "react-hook-form";
 import { z } from "zod";
 import { CustomInputField } from "../../components/CustomInputField";
-import { niveauDuPosteOptions, occupationOptions, relationDestinataireOptions } from "../../lib/data";
+import {
+  niveauDuPosteOptions,
+  occupationOptions,
+  relationDestinataireOptions,
+} from "../../lib/data";
 import { TransferSummary } from "../send-money/start/item";
 import { useLocalStorage } from "usehooks-ts";
 import { InfoTransactionType, identiteSchema } from "../../lib/types";
 
 export function Component() {
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams(searchParams);
+  const pathname = usePathname();
+
   const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
     InfoTransactionType[]
   >("infoTransactionList", []);
+
+  const queryTransactionId = params.get("transactionId");
+
+  const transaction = infoTransactionList.find(
+    trans => trans.id === queryTransactionId
+  );
 
   return (
     <div>
@@ -31,7 +45,7 @@ export function Component() {
             </div>
           </div>
         </div>
-        <TransferSummary montantTransfer={0} />
+        <TransferSummary montantTransfer={transaction?.montantTransfer ?? 0} />
       </div>
       <div className="border-b w-[80%] border-gray-400 border-dashed mb-10 flex mx-auto"></div>
       <div className="text-[10px] border-b border-dotted border-gray-500 pb-12 w-[80%] text-left">
@@ -59,12 +73,28 @@ export function Component() {
 
 function Identite() {
   const router = useRouter();
+
+
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams(searchParams);
+  const pathname = usePathname();
+
+  const queryTransactionId = params.get("transactionId");
+
+  const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
+    InfoTransactionType[]
+  >(`infoTransactionList`, []);
+
+  const transaction = infoTransactionList.find(
+    trans => trans.id === queryTransactionId
+  );
+
   const form = useForm<z.infer<typeof identiteSchema>>({
     resolver: zodResolver(identiteSchema),
     defaultValues: {
-      occupation: "",
-      niveauDuPoste: "",
-      relationAvecDestinataire: "",
+      occupation: transaction?.identite?.occupation ?? "",
+      niveauDuPoste: transaction?.identite?.niveauDuPoste ?? "",
+      relationAvecDestinataire: transaction?.identite?.relationAvecDestinataire ?? "",
     },
   });
 
@@ -72,9 +102,16 @@ function Identite() {
     // Do something with the form values.
     // ✅ This will be type-safe and validated.
 
-    console.log(values);
+    setInfoTransactionList(
+      infoTransactionList.map(item => {
+        if (item.id === queryTransactionId) {
+          item.identite = values;
+        }
+        return item;
+      })
+    );
 
-    router.push("/send-money/app/review");
+    router.push(`/send-money/app/review?transactionId=${queryTransactionId}`);
   }
 
   return (
@@ -115,7 +152,9 @@ function Identite() {
               />
             </div>
             <div className="border-b border-dashed"></div>
-            <Button size="lg" onClick={form.handleSubmit(onSubmit)}>Continuer</Button>
+            <Button size="lg" onClick={form.handleSubmit(onSubmit)}>
+              Continuer
+            </Button>
           </div>
         </form>
       </Form>

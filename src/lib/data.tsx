@@ -1387,42 +1387,42 @@ export const payerCardData: CardProp[] = [
 export const motifOptions: { label: string; value: string }[] = [
   {
     label: "Assistance familiale/Frais de subsistance",
-    value: "FAMILY SUPPORT/LIVING EXPENSES",
+    value: "Assistance familiale/Frais de subsistance",
   },
-  { label: "Épargne/Investissements", value: "SAVINGS/INVESTMENTS" },
+  { label: "Épargne/Investissements", value: "Épargne/Investissements" },
   {
     label: "Paiement de biens et de services",
-    value: "GOODS AND SERVICES PAYMENT/COMMERCIAL TRANSACTION",
+    value: "Paiement de biens et de services",
   },
-  { label: "Frais de voyage", value: "TRAVEL EXPENSES" },
-  { label: "Frais d’éducation/scolaires", value: "EDUCATION/SCHOOL FEE" },
-  { label: "Loyer/Hypothèque", value: "RENT/MORTGAGE" },
-  { label: "Urgence/Assistance médicale", value: "EMERGENCY/MEDICAL AID" },
+  { label: "Frais de voyage", value: "Frais de voyage" },
+  { label: "Frais d’éducation/scolaires", value: "Frais d’éducation/scolaires" },
+  { label: "Loyer/Hypothèque", value: "Loyer/Hypothèque" },
+  { label: "Urgence/Assistance médicale", value: "Urgence/Assistance médicale" },
   {
     label: "Organisme de bienfaisance/Paiement d'aide",
-    value: "CHARITY/AID PAYMENT",
+    value: "Organisme de bienfaisance/Paiement d'aide",
   },
   {
     label: "Frais relatifs à une loterie ou un prix/Impôts",
-    value: "PRIZE OR LOTTERY FEES/TAXES",
+    value: "Frais relatifs à une loterie ou un prix/Impôts",
   },
   {
     label: "Paie des employés/Frais des employés",
-    value: "Employee Payroll/Employee Expense",
+    value: "Paie des employés/Frais des employés",
   },
 ];
 
 export const fondOption: { label: string; value: string }[] = [
-  { label: "Salaire/Revenus", value: "SALARY/INCOME" },
-  { label: "Économies", value: "SAVINGS" },
-  { label: "Prêt/Emprunt", value: "BORROWED FUNDS/LOAN" },
-  { label: "Cadeau", value: "GIFT" },
+  { label: "Salaire/Revenus", value: "Salaire/Revenus" },
+  { label: "Économies", value: "Économies" },
+  { label: "Prêt/Emprunt", value: "Prêt/Emprunt" },
+  { label: "Cadeau", value: "Cadeau" },
   {
     label: "Pension/Allocations publiques/Aide sociale",
-    value: "PENSION/GOVERNMENT/WELFARE",
+    value: "Pension/Allocations publiques/Aide sociale",
   },
-  { label: "Héritage", value: "INHERITANCE" },
-  { label: "Dons de bienfaisance", value: "CHARITABLE DONATIONS" },
+  { label: "Héritage", value: "Héritage" },
+  { label: "Dons de bienfaisance", value: "Dons de bienfaisance" },
 ];
 
 // export const occupationOptions: { label: string; value: string }[] = [

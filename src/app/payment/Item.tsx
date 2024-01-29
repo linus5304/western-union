@@ -9,7 +9,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreditCard } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Form, useForm } from "react-hook-form";
 import { z } from "zod";
 import { InputField } from "../../components/InputField";
@@ -48,20 +48,30 @@ export function Component() {
     setInfoTransaction({ ...infoTransaction, paymentCard: value });
   }
 
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams(searchParams);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const queryTransactionId = params.get("transactionId");
+  // const infoTransaction = infoTransactionList.find(
+  //   item => item.id === queryTransactionId
+  // );
+
   return (
     <div className="grid grid-cols-3 gap-4 p-6">
       <div className="flex flex-col space-y-6 col-span-2">
         <div>
           <h1 className="text-2xl font-normal">Informations de paiement</h1>
         </div>
-        <NouvelleCarte handleUpdateInfoTransaction={handleUpdateTransaction} />
+        <NouvelleCarte handleUpdateInfoTransaction={handleUpdateTransaction} transactionId={queryTransactionId ?? ''} />
 
         <div>
           <label className="block text-lg font-normal text-gray-600">
             Sélectionner une carte
           </label>
           {paymentCardList.map((card, idx) => (
-            <CarteExistante {...card} key={card.id ?? idx}/>
+            <CarteExistante {...card} key={card.id ?? idx} transactionId={queryTransactionId ?? ''}/>
           ))}
         </div>
         <div>
@@ -70,7 +80,7 @@ export function Component() {
           </label>
           <div className="flex flex-col gap-2">
             {paymentCardList.map((card, idx) => (
-              <CarteExistante {...card} key={card.id ?? idx}/>
+              <CarteExistante {...card} key={card.id ?? idx} transactionId={queryTransactionId ?? ''} />
             ))}
           </div>
         </div>
@@ -101,12 +111,18 @@ export function Component() {
 
 interface CarteProps {
   handleUpdateInfoTransaction: (val: PaymentCardType) => void;
+  transactionId: string
 }
 
-function NouvelleCarte({ handleUpdateInfoTransaction }: CarteProps) {
+function NouvelleCarte({ handleUpdateInfoTransaction, transactionId }: CarteProps) {
   const [paymentCardList, setPaymentCardList] = useLocalStorage<
     PaymentCardType[]
   >("paymentCardList", []);
+
+const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
+  InfoTransactionType[]
+>(`infoTransactionList`, []);
+
   const router = useRouter();
   const form = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
@@ -124,8 +140,22 @@ function NouvelleCarte({ handleUpdateInfoTransaction }: CarteProps) {
     handleUpdateInfoTransaction(data);
     setPaymentCardList([...paymentCardList, data]);
     console.log(values);
+    infoTransactionList.map(transaction => {
+      if(transaction.id === transactionId) {
+        transaction = { ...transaction, paymentCard: data };
+      }
+    })
 
-    router.push("/verification");
+    setInfoTransactionList(
+      infoTransactionList.map(item => {
+        if (item.id === transactionId ) {
+          item.paymentCard = data 
+        }
+        return item;
+      })
+    );
+
+    router.push(`/verification?transactionId=${transactionId}`);
   }
 
   return (
@@ -197,11 +227,15 @@ function NouvelleCarte({ handleUpdateInfoTransaction }: CarteProps) {
   );
 }
 
-function CarteExistante({ ...payment }: PaymentCardType) {
+function CarteExistante({ transactionId, ...payment }: PaymentCardType & { transactionId: string }) {
   const router = useRouter();
   const [paymentCardList, setPaymentCardList] = useLocalStorage<
     PaymentCardType[]
   >("paymentCardList", []);
+
+  const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
+    InfoTransactionType[]
+  >(`infoTransactionList`, []);
   const form = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
@@ -220,13 +254,25 @@ function CarteExistante({ ...payment }: PaymentCardType) {
         if (item.id === payment.id) {
           item.cvv = values.cvv;
         }
-
         return item;
       })
     );
 
-    router.push("/verification");
-  }
+    setInfoTransactionList(
+      infoTransactionList.map(item => {
+        if (item.id === transactionId && item.paymentCard) {
+          item.paymentCard = {
+            ...payment,
+            cvv: values.cvv,
+          };
+        }
+        return item;
+      })
+    );
+
+      router.push(`/verification?transactionId=${transactionId}`);
+    }
+
   return (
     <Form {...form}>
       <form>

@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Edit2Icon, UserPlus } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Form, useForm } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
 import { z } from "zod";
@@ -25,6 +25,7 @@ import {
   BeneficiareType,
   InfoTransactionType,
   beneficiareSchema,
+  newInfoTransaction,
 } from "../../lib/types";
 import { TransferSummary } from "../send-money/start/item";
 import { v4 as uuidv4 } from "uuid";
@@ -33,14 +34,24 @@ export function Component() {
   const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
     InfoTransactionType[]
   >("infoTransactionList", []);
-  const [infoTransaction, setInfoTransaction] =
-    useLocalStorage<InfoTransactionType>(
-      "infoTransaction",
-      infoTransactionList[0]!
-    );
+  // const [infoTransaction, setInfoTransaction] =
+  //   useLocalStorage<InfoTransactionType>(
+  //     "infoTransaction",
+  //     infoTransactionList[]
+  //   );
   const [beneficiaireList, setBeneficiaireList] = useLocalStorage<
     BeneficiareType[]
   >("beneficiaireList", []);
+
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams(searchParams);
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const queryTransactionId = params.get("transactionId");
+  const infoTransaction = infoTransactionList.find(
+    item => item.id === queryTransactionId
+  );
 
   // if(!infoTransaction) return (<>Loading...</>)
 
@@ -66,14 +77,18 @@ export function Component() {
             </li>
           </ul>
         </div>
-        <NouveauBeneficier />
+        <NouveauBeneficier transaction={infoTransaction} />
 
         <div>
           <label className="block text-lg font-semibold text-gray-600">
             Bénéficiaire du pays sélectionné
           </label>
           {beneficiaireList.map((beneficiaire, idx) => (
-            <BeneficierExistant {...beneficiaire} key={beneficiaire.id ?? idx}/>
+            <BeneficierExistant
+              transactionId={infoTransaction?.id ?? ""}
+              {...beneficiaire}
+              key={beneficiaire.id ?? idx}
+            />
           ))}
         </div>
         <div>
@@ -113,11 +128,19 @@ export function Component() {
   );
 }
 
-function NouveauBeneficier() {
+interface NouveauBeneficierType {
+  transaction: InfoTransactionType | undefined;
+}
+
+function NouveauBeneficier({ transaction }: NouveauBeneficierType) {
   const router = useRouter();
   const [beneficiaireList, setBeneficiaireList] = useLocalStorage<
     BeneficiareType[]
   >("beneficiaireList", []);
+  const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
+    InfoTransactionType[]
+  >(`infoTransactionList`, []);
+  // console.log(`Transactions - ${infoTransaction.id}`, infoTransaction);
   const form = useForm<z.infer<typeof beneficiareSchema>>({
     resolver: zodResolver(beneficiareSchema),
     defaultValues: {
@@ -131,14 +154,28 @@ function NouveauBeneficier() {
     },
   });
 
+  const infoTransaction = infoTransactionList.find(
+    item => item.id === transaction?.id
+  );
+
   function onSubmit(values: z.infer<typeof beneficiareSchema>) {
     console.log(values);
 
-    setBeneficiaireList([...beneficiaireList, { ...values, id: uuidv4() }]);
+    const beneficiare = { ...values, id: uuidv4() };
+
+    setBeneficiaireList([...beneficiaireList, { ...beneficiare }]);
+    setInfoTransactionList(
+      infoTransactionList.map(item => {
+        if (item.id === transaction?.id) {
+          item.beneficiare = beneficiare;
+        }
+        return item;
+      })
+    );
 
     form.reset();
 
-    router.push("/payment");
+    router.push(`/payment?transactionId=${infoTransaction?.id}`);
   }
 
   return (
@@ -251,32 +288,37 @@ function NouveauBeneficier() {
 }
 
 function BeneficierExistant({
+  transactionId,
   isDisabled,
-  ...item
-}: { isDisabled?: boolean } & BeneficiareType) {
+  ...itemBen
+}: { isDisabled?: boolean; transactionId: string } & BeneficiareType) {
   const router = useRouter();
 
   const [beneficiaireList, setBeneficiaireList] = useLocalStorage<
     BeneficiareType[]
   >("beneficiaireList", []);
 
+  const [infoTransactionList, setInfoTransactionList] = useLocalStorage<
+    InfoTransactionType[]
+  >(`infoTransactionList`, []);
+
   const form = useForm<z.infer<typeof beneficiareSchema>>({
     resolver: zodResolver(beneficiareSchema),
     defaultValues: {
-      prenom: item.prenom,
-      deuxiemePrenom: item.deuxiemePrenom,
-      nomFamille: item.nomFamille,
-      email: item.email,
+      prenom: itemBen.prenom,
+      deuxiemePrenom: itemBen.deuxiemePrenom,
+      nomFamille: itemBen.nomFamille,
+      email: itemBen.email,
       motif: "",
       originFond: "",
-      telephone: item.telephone,
+      telephone: itemBen.telephone,
     },
   });
 
   function onSubmit(values: z.infer<typeof beneficiareSchema>) {
     setBeneficiaireList(
       beneficiaireList.map(ben => {
-        if ((ben.id = item.id)) {
+        if ((ben.id = itemBen.id)) {
           ben.motif = values.motif;
           ben.originFond = values.originFond;
         }
@@ -284,9 +326,22 @@ function BeneficierExistant({
       })
     );
 
+    setInfoTransactionList(
+      infoTransactionList.map(item => {
+        if (item.id === transactionId && item.beneficiare) {
+          item.beneficiare = {
+            ...itemBen,
+            motif: values.motif,
+            originFond: values.originFond,
+          };
+        }
+        return item;
+      })
+    );
+
     form.reset();
 
-    router.push("/payment");
+    router.push(`/payment?transactionId=${transactionId}`);
   }
   return (
     <Form {...form}>
@@ -313,7 +368,7 @@ function BeneficierExistant({
                     className="absolute rounded-none top-6 left-6"
                   />
                 </div>
-                <div className="font-light text-[#637cb7]">{`${item.nomFamille} ${item.prenom}`}</div>
+                <div className="font-light text-[#637cb7]">{`${itemBen.nomFamille} ${itemBen.prenom}`}</div>
               </div>
               <div></div>
             </AccordionTrigger>
@@ -324,7 +379,7 @@ function BeneficierExistant({
                     <p>Informations personnelles du bénéficiaire</p>
                     <Edit2Icon className="stroke-blue-400" />
                   </div>
-                  <div className="mb-6">{`${item.nomFamille} ${item.prenom}`}</div>
+                  <div className="mb-6">{`${itemBen.nomFamille} ${itemBen.prenom}`}</div>
                   <div className="flex w-full gap-4">
                     <SelectField
                       control={form.control}

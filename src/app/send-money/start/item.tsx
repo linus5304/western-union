@@ -24,7 +24,7 @@ import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { BanknoteIcon, Check, Search } from "lucide-react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { UseFormReturn, useForm } from "react-hook-form";
 import { useLocalStorage } from "usehooks-ts";
@@ -48,7 +48,13 @@ type Payer = "carte-credit" | "payer-especes" | "transfert-bancaire";
 export function Component() {
   const [infoTransaction, setInfoTransaction] = useLocalStorage<InfoTransactionType>("infoTransaction", null!);
   const [infoTransactionList, setInfoTransactionList] = useLocalStorage<InfoTransactionType[]>("infoTransactionList", []);
+
+  const searchParams = useSearchParams();
+  const params = new URLSearchParams(searchParams);
+  const pathname = usePathname();
   const router = useRouter();
+
+
 
   function handleValuePayer(value: Payer) {
     form.setValue("modePaiment", value);
@@ -66,7 +72,14 @@ export function Component() {
     const data = {...values, id: uuidv4()}
     setInfoTransaction(data);
     setInfoTransactionList([...infoTransactionList, data]);
-    router.push("/receiver");
+    params.set('transactionId', '1');
+    if (data.id) {
+      params.set('transactionId', data.id);
+    } else {
+      params.delete('transactionId');
+    }
+    router.replace(`/receiver?${params.toString()}`);
+    // router.push("/receiver");
     console.log("Form data", values);
   }
 
